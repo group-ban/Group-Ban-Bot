@@ -1,0 +1,10 @@
+{
+  "TOKEN": "My Token",
+  "DATABASE": {
+    "host": "localhost",
+    "port": "3306",
+    "database": "Database Name",
+    "user": "Username",
+    "password": "Password"
+  }
+}
