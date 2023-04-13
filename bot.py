@@ -2,13 +2,15 @@ from __future__ import annotations
 from typing import Optional
 import bale
 from bale import Message
-from cogs import Admin, Help
-from utils import persianNumbers, Components, ConfigParser
+from cogs import Admin, Help, Setup, Filter
+from utils import persianNumbers, Components, ConfigParser, make_persian
 from database import DB
 
 components = (
     Admin,
-    Help
+    Help,
+    Setup,
+    Filter
 )
 
 with open("./config.json", "r", encoding="utf8") as _file:
@@ -21,6 +23,7 @@ class GroupBan(bale.Bot):
         self.config = config
         self.components = Components()
         self.setup_events()
+        self.make_persian = make_persian
 
     def make_db(self):
         return DB(config.DATABASE)
