@@ -3,7 +3,7 @@ from typing import Optional
 import bale
 from bale import Message, RemoveComponents
 from cogs import Admin, Help
-from utils import persianNumbers, Components, ConfigParser
+from utils import persianNumbers, Components, ConfigParser, converts
 from database import DB
 
 components = (
@@ -20,6 +20,7 @@ class GroupBan(bale.Bot):
         super().__init__(config.TOKEN)
         self.config = config
         self.components = Components()
+        self.convert_manager = converts.Converters()
         self.setup_events()
 
     def make_db(self):

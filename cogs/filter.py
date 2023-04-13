@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 class Admin:
     def __init__(self, bot: "GroupBan"):
         self.bot = bot
+        self.convert_manager = bot.convert_manager
 
     def setup(self):
         return {
@@ -17,6 +18,7 @@ class Admin:
     async def when_send_message_in_group(self, message: bale.Message):
         if not message.chat.type.is_group_chat():
             return
+        
 
         with self.bot.make_db() as connection:
             cursor = connection.cursor()
@@ -27,6 +29,12 @@ class Admin:
             cursor.execute("SELECT word, answer FROM auto_answer WHERE chat_id = '{}'".format(message.chat.chat_id))
             auto_answer_dict = {word: answer for word, answer in cursor.fetchall()}
             (anti_link, anti_mention, anti_word, auto_answer) = filters
+
+            cursor.execute("SELECT word, answer FROM bad_words WHERE chat_id = '{}'".format(message.chat.chat_id))
+            bad_words = {word: word for word in cursor.fetchall()}
+            for word in bad_words:
+                if word == self.convert_manager.make_persian( message.content):
+                    return await message.delete()
 
         member = await self.bot.get_chat_member(message.chat_id, message.author.user_id)
         if not member or not member.status.is_member():
