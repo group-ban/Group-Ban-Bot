@@ -1,11 +1,10 @@
 import re
 from typing import TYPE_CHECKING
 import bale
-from ..utils import make_persian
 if TYPE_CHECKING:
     from ..bot import GroupBan
 
-class Admin:
+class Filter:
     def __init__(self, bot: "GroupBan"):
         self.bot = bot
 
@@ -31,8 +30,11 @@ class Admin:
             cursor.execute("SELECT word FROM bad_words WHERE chat_id = '{}'".format(message.chat.chat_id))
             bad_words = cursor.fetchall()
 
-        standard_content = make_persian(message.content)
-        member = await self.bot.get_chat_member(message.chat_id, message.author.user_id)
+        standard_content = self.bot.make_persian(message.content)
+        try:
+            member = await self.bot.get_chat_member(message.chat_id, message.author.user_id)
+        except:
+            member = None
         if not member or not member.status.is_member():
             return
 
