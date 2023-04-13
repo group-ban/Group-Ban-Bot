@@ -40,7 +40,7 @@ class Setup:
 			await message.chat.send("🚀 *لطفا چت شخصی خود با ربات را بررسی نمائید*")
 
 			render_message = await message.author.send(first_render)
-			action_message = await message.author.send("🚀 * 🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *")
+			action_message = await message.author.send("🚀 * 🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *", components=self.bot.components.setup_command())
 
 			while 1:
 				try:
@@ -77,7 +77,8 @@ class Setup:
 			return
 		(anti_spam, anti_link, anti_mention, anti_word, auto_answer) = result
 
-		return "💠 *ستاپ کردن ربات در گروه محمد و پسران*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 آنتی اسپم: {}\n🔧 آنتی لینک: {}\n🔧 آنتی منشن: {}\n🔧 آنتی ورد: {}\n🔧 پاسخگویی خودکار: {}\n\n👇 *شما میتوانید با استفاده از دکمه های پیام زیر، تنظیمات را تغییر دهید.*".format(
+		return "💠 *ستاپ کردن ربات در گروه {}*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 آنتی اسپم: {}\n🔧 آنتی لینک: {}\n🔧 آنتی منشن: {}\n🔧 آنتی ورد: {}\n🔧 پاسخگویی خودکار: {}\n\n👇 *شما میتوانید با استفاده از دکمه های پیام زیر، تنظیمات را تغییر دهید.*".format(
+			chat.title,
 			chat.chat_id,
 			render_bool(anti_spam),
 			render_bool(anti_link),
