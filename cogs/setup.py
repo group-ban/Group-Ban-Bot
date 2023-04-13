@@ -48,7 +48,12 @@ class Setup:
 				except asyncio.TimeoutError:
 					await render_message.delete()
 					await action_message.delete()
+					break
 				else:
+					if action.data == "exit":
+						await action_message.delete()
+						break
+
 					if not action.data in ["anti_spam", "anti_link", "anti_mention", "anti_word", "auto_answer"]:
 						continue
 
@@ -58,6 +63,10 @@ class Setup:
 						message.chat.chat_id
 					))
 					connection.commit()
+
+			connection.close()
+			return await render_message.reply("💠 *تعییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) استفاده کنید")
+
 
 	def render_chat_info(self, connection: "DB", chat: bale.Chat):
 		render_bool = lambda state: "فعال" if state else "غیر فعال"
