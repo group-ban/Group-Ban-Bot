@@ -1,5 +1,6 @@
 from .components import Components
 from .config import ConfigParser
+from farsi_tools import standardize_persian_text as make_persian
 
 persianNumbers = (
 	('۱', '1'),
@@ -14,4 +15,4 @@ persianNumbers = (
 	('۰', '0'),
 )
 
-__all__ = (persianNumbers, Components, ConfigParser)
+__all__ = (persianNumbers, Components, ConfigParser, make_persian)
