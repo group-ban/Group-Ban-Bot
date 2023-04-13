@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 import asyncio
 import bale
-from bale.error import Forbidden
 
 if TYPE_CHECKING:
 	from ..bot import GroupBan
@@ -14,7 +13,7 @@ class Setup:
 
 	def setup(self):
 		return {
-
+			self.when_message: "message"
 		}
 
 	async def when_message(self, message: bale.Message):
@@ -27,20 +26,26 @@ class Setup:
 	async def when_send_setup(self, message: bale.Message):
 		check_message = await message.chat.send("📡 * در حال برقراری ارتباط با سرور... *\n😉 لطفا شکیبا باشید")
 		try:
-			await message.chat.get_chat_administrators()
-		except Forbidden:
+			admins = await message.chat.get_chat_administrators()
+		except:
 			return await check_message.edit("❌ *من فاقد دسترسی ادمین با دسترسی کامل هستم، لطفا دسترسی را داده و مجددا دستور را ارسال کنید!*")
 		else:
+			admins = [int(admin.user.chat_id) for admin in admins]
+			if not int(message.author.user_id) in admins:
+				return await check_message.edit("❌ *شما ادمین چت نیستید*")
 			connection = self.bot.make_db()
 
 			first_render = self.render_chat_info(connection, message.chat)
-			if first_render:
-				return await message.reply("❌ *این چت در دیتابیس یافت نشد؛ لطفا ربات را کیک کرده و دوباره به گروه اضافه کنید*")
+			if not first_render:
+				return await check_message.edit("❌ *این چت در دیتابیس یافت نشد؛ لطفا ربات را کیک کرده و دوباره به گروه اضافه کنید*")
 
-			await message.chat.send("🚀 *لطفا چت شخصی خود با ربات را بررسی نمائید*")
+			await check_message.edit("🚀 *لطفا چت شخصی خود با ربات را بررسی نمائید*")
 
-			render_message = await message.author.send(first_render)
-			action_message = await message.author.send("🚀 * 🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *", components=self.bot.components.setup_command())
+			try:
+				render_message = await message.author.send(first_render)
+				action_message = await message.author.send("🚀 * 🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *", components=self.bot.components.setup_command())
+			except:
+				return await check_message.edit("❌ *امکان ارسال پیام به شما وجود ندارد، لطفا محدودیت هارا برداشته و یا یک بار به ربات پیام بدهید*")
 
 			while 1:
 				try:
@@ -60,9 +65,11 @@ class Setup:
 					cursor = connection.cursor()
 					cursor.execute("UPDATE chat SET {0} = !{0} WHERE chat_id = '{1}'".format(
 						action.data,
-						message.chat.chat_id
+						int(message.chat.chat_id)
 					))
 					connection.commit()
+
+					await render_message.edit(self.render_chat_info(connection, message.chat))
 
 			connection.close()
 			return await render_message.reply("💠 *تعییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) استفاده کنید")
