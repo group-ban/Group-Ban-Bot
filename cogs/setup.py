@@ -19,9 +19,72 @@ class Setup:
 	async def when_message(self, message: bale.Message):
 		if message.content == "/setup":
 			if message.chat.type.is_private_chat():
-				return await message.chat.send("🚀 * برای ستاپ کردن من داخل گروه خود، ابتدا من را به آن جا اضافه کرده و سپس برای ستاپ کردن ربات دستور /setup را وارد کنید *")
+				return await message.chat.send("🚀 * امکان اجرای این دستور در تنها در گروه امکان پذیر است *")
 
 			return await self.when_send_setup(message)
+
+		elif message.content == "/aa-add":
+			if message.chat.type.is_private_chat():
+				return await message.chat.send("🚀 * امکان اجرای این دستور در تنها در گروه امکان پذیر است *")
+
+			return await self.auto_answer_add(message)
+
+		elif message.content == "/aa-remove":
+			if message.chat.type.is_private_chat():
+				return await message.chat.send("🚀 * امکان اجرای این دستور در تنها در گروه امکان پذیر است *")
+
+			return await self.auto_answer_add(message)
+
+	async def auto_answer_add(self, message: bale.Message):
+		await message.chat.send(
+			"🔷 *ساخت پاسخگوی جدید - مرحله اول*\nلطفا *کلمه* که میخواهید با ارسال آن پاسخی برای کاربر ارسال شود را وارد کنید")
+		try:
+			se_1: bale.Message = await self.bot.wait_for("message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
+		except asyncio.TimeoutError:
+			return await message.chat.send("*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*\n❓ [دریافت راهنمای این دستور](send:/help_aa_add)")
+		else:
+			await message.chat.send(
+				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید".format(se_1.content))
+			try:
+				se_2: bale.Message = await self.bot.wait_for("message", check=lambda
+					m: m.chat == message.chat and m.author == message.author, timeout=30.0)
+			except asyncio.TimeoutError:
+				return await message.chat.send(
+					"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*\n❓ [دریافت راهنمای این دستور](send:/help_aa_add)")
+			else:
+				load_msg = await message.chat.send("📡 *در حال برقراری ارتباط با مرکز...*")
+				with self.bot.make_db() as connection:
+					cursor = connection.cursor()
+					cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1, message.chat_id))
+					if cursor.fetchone():
+						return await load_msg.edit("❌ *کلمه {} از قبل در دیتابیس وجود داشته است*".format(se_1.content))
+
+					cursor.execute("INSERT INTO auto_answer(chat_id, word, answer) VALUES (%s, %s, %s)", (message.chat_id, se_1.content, se_2.content))
+					connection.commit()
+
+				await load_msg.edit("😉 *پاسخگوی مورد نظر با موفقیت اضافه شد*")
+
+	async def auto_answer_remove(self, message: bale.Message):
+		await message.chat.send(
+			"🔷 *حذف پاسخگو*\nلطفا *کلمه* ای را که میخواهید دیگر با ارسال آن پاسخی ارسال نگردد را وارد نمائید")
+		try:
+			se_1: bale.Message = await self.bot.wait_for("message", check=lambda
+				m: m.chat == message.chat and m.author == message.author, timeout=30.0)
+		except asyncio.TimeoutError:
+			return await message.chat.send(
+				"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*\n❓ [دریافت راهنمای این دستور](send:/help_aa_remove)")
+		else:
+			load_msg = await message.chat.send("📡 *در حال برقراری ارتباط با مرکز...*")
+			with self.bot.make_db() as connection:
+				cursor = connection.cursor()
+				cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1, message.chat_id))
+				if not cursor.fetchone():
+					return await load_msg.edit("❌ *کلمه {} از قبل در دیتابیس وجود نداشته است*".format(se_1.content))
+
+				cursor.execute("DELETE FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1.content, message.chat_id))
+				connection.commit()
+
+			await load_msg.edit("😉 *پاسخگوی مورد نظر با موفقیت حذف شد*")
 
 	async def when_send_setup(self, message: bale.Message):
 		check_message = await message.chat.send("📡 * در حال برقراری ارتباط با سرور... *\n😉 لطفا شکیبا باشید")
@@ -39,13 +102,13 @@ class Setup:
 			if not first_render:
 				return await check_message.edit("❌ *این چت در دیتابیس یافت نشد؛ لطفا ربات را کیک کرده و دوباره به گروه اضافه کنید*")
 
-			await check_message.edit("🚀 *لطفا چت شخصی خود با ربات را بررسی نمائید*")
-
 			try:
 				render_message = await message.author.send(first_render)
-				action_message = await message.author.send("🚀 * 🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *", components=self.bot.components.setup_command())
+				action_message = await message.author.send("🚀 🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *", components=self.bot.components.setup_command())
 			except:
 				return await check_message.edit("❌ *امکان ارسال پیام به شما وجود ندارد، لطفا محدودیت هارا برداشته و یا یک بار به ربات پیام بدهید*")
+
+			await check_message.edit("🚀 *برای تغییر تنظیمات گروه به پی وی ربات مراجعه نمائید*")
 
 			while 1:
 				try:
@@ -72,7 +135,7 @@ class Setup:
 					await render_message.edit(self.render_chat_info(connection, message.chat))
 
 			connection.close()
-			return await render_message.reply("💠 *تعییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) استفاده کنید")
+			return await render_message.reply("💠 *نغییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) در گروه خود استفاده نمائید")
 
 
 	def render_chat_info(self, connection: "DB", chat: bale.Chat):
