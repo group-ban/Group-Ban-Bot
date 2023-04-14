@@ -6,5 +6,6 @@
     "database": "Database Name",
     "user": "Username",
     "password": "Password"
-  }
+  },
+  "VENV_SHELL_CODE": "Your Code"
 }

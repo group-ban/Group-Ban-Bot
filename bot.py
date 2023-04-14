@@ -1,16 +1,22 @@
 from __future__ import annotations
+import os
+import sys
 from typing import Optional
+import asyncio
 import bale
-from bale import Message
-from cogs import Admin, Help, Setup, Filter
+from bale import Message, Update
+from threading import Thread
+from cogs import Admin, Help, Setup, Filter, Commands
 from utils import persianNumbers, Components, ConfigParser, make_persian
 from database import DB
+from datetime import datetime, timedelta
 
 components = (
     Admin,
     Help,
     Setup,
-    Filter
+    Filter,
+    Commands
 )
 
 with open("./config.json", "r", encoding="utf8") as _file:
@@ -23,6 +29,7 @@ class GroupBan(bale.Bot):
         self.config = config
         self.components = Components()
         self.setup_events()
+        self.last_request = datetime.now()
         self.make_persian = make_persian
 
     def make_db(self):
@@ -39,6 +46,10 @@ class GroupBan(bale.Bot):
 
     async def on_ready(self):
         print("Login as", self.user.username)
+
+    async def get_updates(self, offset: int = None, limit: int = None) -> list["Update"]:
+        self.last_request = datetime.now()
+        return await super().get_updates(offset, limit)
 
     async def send_message(self, chat_id, text, *, components=None, reply_to_message_id: Optional[str | int] = None) -> "Message":
         """This service is used to send text messages.
@@ -72,5 +83,21 @@ class GroupBan(bale.Bot):
                                           reply_to_message_id=reply_to_message_id)
 
 
+
 bot = GroupBan()
-bot.run()
+async def check_bot_work():
+    while 1:
+        if isinstance(bot.loop, asyncio.AbstractEventLoop):
+            break
+    while not bot.is_closed():
+        now = datetime.now()
+        if bot.last_request:
+            if bot.last_request + timedelta(seconds=20) <= datetime.now():
+                bot._closed = True
+                os.system("clear")
+                os.system(bot.config.SHELL_CODE)
+                os.system("screen python3 bot.py")
+                sys.exit()
+
+Thread(target=lambda: asyncio.run(check_bot_work())).start()
+bot.run(1)
