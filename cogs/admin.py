@@ -47,7 +47,7 @@ class Admin:
 
 		check_message = await message.chat.send(self.bot.base_messages["wait"])
 		try:
-			member = await message.chat.get_chat_member(message.author)
+			member = await message.chat.get_chat_member(str(message.author.user_id))
 		except:
 			return await check_message.edit(
 				"❌ *من فاقد دسترسی ادمین با دسترسی کامل هستم، لطفا دسترسی را داده و مجددا دستور را ارسال کنید!*")
