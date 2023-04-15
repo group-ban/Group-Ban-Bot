@@ -85,7 +85,11 @@ class GroupBan(bale.Bot):
         return await super().send_message(chat_id, text, components=components,
                                           reply_to_message_id=reply_to_message_id)
 
-
+    async def edit_message(self, chat_id: str | int, message_id: str | int, text: str, *,
+                           components = None) -> "Message":
+        for (persian_num, english_num) in persianNumbers:
+            text = text.replace(english_num, persian_num)
+        return await super().edit_message(chat_id, message_id, text, components=components)
 
 bot = GroupBan()
 async def check_bot_work():
