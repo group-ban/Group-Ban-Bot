@@ -100,12 +100,14 @@ class Admin:
 
 	async def auto_answer_add(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
-			"🔷 *ساخت پاسخگوی جدید - مرحله اول*\nلطفا *کلمه* که میخواهید با ارسال آن پاسخی برای کاربر ارسال شود را وارد کنید")
+			"🔷 *ساخت پاسخگوی جدید - مرحله اول*\nلطفا *کلمه* که میخواهید با ارسال آن پاسخی برای کاربر ارسال شود را وارد کنید\n💡 کلمه شما میبایست حداقل *2* کاراکتر و حداکثر *20* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
 		try:
 			se_1: bale.Message = await self.bot.wait_for("message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
 		except asyncio.TimeoutError:
-			return await message.chat.send("*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*\n❓ [دریافت راهنمای این دستور](send:/help_aa_add)")
+			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*")
 		else:
+			if se_1.content in ["/cancel", "کنسل"]:
+				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
 			await message.chat.send(
 				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید".format(se_1.content))
 			try:
@@ -115,6 +117,8 @@ class Admin:
 				return await message.chat.send(
 					"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*\n❓ [دریافت راهنمای این دستور](send:/help_aa_add)")
 			else:
+				if se_2.content in ["/cancel", "کنسل"]:
+					return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
 				load_msg = await message.chat.send("📡 *در حال برقراری ارتباط با مرکز...*")
 				with self.bot.make_db() as connection:
 					cursor = connection.cursor()
@@ -137,6 +141,8 @@ class Admin:
 			return await message.chat.send(
 				"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*\n❓ [دریافت راهنمای این دستور](send:/help_aa_remove)")
 		else:
+			if se_1.content in ["/cancel", "کنسل"]:
+				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
 			load_msg = await message.chat.send("📡 *در حال برقراری ارتباط با مرکز...*")
 			with self.bot.make_db() as connection:
 				cursor = connection.cursor()
