@@ -9,6 +9,10 @@ class Help:
 	def __init__(self, bot: "GroupBan"):
 		self.bot = bot
 
+	@property
+	def commands(self):
+		return ["/start", "/help"]
+
 	def setup(self):
 		return {
 			self.when_message: "message",
@@ -17,7 +21,7 @@ class Help:
 		}
 
 	async def when_message(self, message: bale.Message):
-		if message.content == "/help":
+		if message.content in ["/help", "/start"]:
 			if message.chat.type.is_group_chat():
 				return await message.reply("💠 *لیست خدمات اصلی ربات*\n\n🔧 [تنظیم کانفیگ کلی ربات](send:/setup)\n🔧 [تنظیم بخش پاسخگویی خودکار](send:/auto_answer)\n🔧 [تنظیم بخش حذف کلمه](send:/bad_words)\n\n💠 *لیست خدمات فرعی ربات*\n\n🔧 [دریافت اطلاعات گروه](send:/groupinfo)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.")
 			return await message.author.send('🤖 *به ربات گروه بان خوش آمدید*\n👇 لطفا از طریق دکمه های زیر، کارکرد خود را *انتخاب* نمائید، و یا در صورتی که با ربات آشنایی ندارید بر روی گزینه *"راهنما"* کلیک نمائید.', components=self.bot.components.help_command())
