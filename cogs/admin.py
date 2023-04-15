@@ -47,13 +47,15 @@ class Admin:
 
 		check_message = await message.chat.send(self.bot.base_messages["wait"])
 		try:
-			member = await message.chat.get_chat_member(str(message.author.user_id))
+			member = await self.bot.get_chat_member(message.chat_id, str(message.author.user_id))
 		except:
 			return await check_message.edit(
 				"❌ *من فاقد دسترسی ادمین با دسترسی کامل هستم، لطفا دسترسی را داده و مجددا دستور را ارسال کنید!*")
 		else:
 			if member.status.is_member():
 				return await check_message.edit("❌ *شما ادمین چت نیستید*")
+
+		return await self.commands.get(message.content)(message, check_message)
 
 
 	async def group_setup(self, message: bale.Message, check_message: bale.Message):
@@ -108,8 +110,10 @@ class Admin:
 		else:
 			if se_1.content in ["/cancel", "کنسل"]:
 				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
+			if not (20 >= len(se_1.content) >= 2):
+				return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
 			await message.chat.send(
-				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید".format(se_1.content))
+				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید\n💡 عبارت شما میبایست حداقل *2* کاراکتر و حداکثر *20* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید".format(se_1.content))
 			try:
 				se_2: bale.Message = await self.bot.wait_for("message", check=lambda
 					m: m.chat == message.chat and m.author == message.author, timeout=30.0)
@@ -119,6 +123,8 @@ class Admin:
 			else:
 				if se_2.content in ["/cancel", "کنسل"]:
 					return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
+				if not (20 >= len(se_2.content) >= 2):
+					return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
 				load_msg = await message.chat.send("📡 *در حال برقراری ارتباط با مرکز...*")
 				with self.bot.make_db() as connection:
 					cursor = connection.cursor()
@@ -139,7 +145,7 @@ class Admin:
 				m: m.chat == message.chat and m.author == message.author, timeout=30.0)
 		except asyncio.TimeoutError:
 			return await message.chat.send(
-				"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*\n❓ [دریافت راهنمای این دستور](send:/help_aa_remove)")
+				"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*")
 		else:
 			if se_1.content in ["/cancel", "کنسل"]:
 				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
