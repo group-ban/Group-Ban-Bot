@@ -25,7 +25,7 @@ class Commands:
             return await message.chat.send("❌ *تنها امکان ارسال این دستور در گروه امکان پذیر است*")
 
         if message.content == "/commands":
-            return await message.chat.send("💠 *لیست خدمات اصلی ربات*\n\n🔧 [تنظیم کانفیگ کلی ربات](send:/setup)\n🔧 [تنظیم بخش پاسخگویی خودکار](send:/auto_answer)\n🔧 [تنظیم بخش حذف کلمه](send:/bad_words)\n\n💠 *لیست خدمات فرعی ربات*\n\n🔧 [دریافت اطلاعات گروه](send:/groupinfo)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.")
+            return await message.chat.send("⛏ *دستورات ربات*\n\n💠 *دستورات خدمات اصلی*\n🔧 [تنظیم کانفیگ کلی ربات](send:/setup) - [❓](send:/help_setup)\n🔧 [تنظیم بخش پاسخگویی خودکار](send:/auto_answer)\n🔧 [تنظیم بخش حذف کلمه](send:/bad_words)\n💠 *دستورات خدمات فرعی*\n🔧 [دریافت اطلاعات گروه](send:/groupinfo)\n\n💻 [سایت گروه بان](https://groupban.ir)\n📞 [پشتیبانی ربات](https://groupban.ir/support)")
 
         elif message.content in ["/auto-answer", "/auto_answer"]:
             return await message.chat.send("🤖 *پاسخگویی خودکار*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که _کاربران عادی_ با فرستادن آن ها پاسخ های مشخصی را دریافت می نماید.\n\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن پاسخگو\n[/aa-add](send:/aa-add)\n➖ دستور پاک کردن پاسخگو\n[/aa-remove](send:/aa-remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.")
