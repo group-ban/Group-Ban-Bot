@@ -6,15 +6,14 @@ import asyncio
 import bale
 from bale import Message, Update
 from threading import Thread
-from cogs import Admin, Help, Setup, Filter, Commands
-from utils import persianNumbers, Components, ConfigParser, make_persian
+from cogs import Admin, Help, Filter, Commands
+from utils import persianNumbers, Components, ConfigParser, make_persian, messages
 from database import DB
 from datetime import datetime, timedelta
 
 components = (
     Admin,
     Help,
-    Setup,
     Filter,
     Commands
 )
@@ -31,6 +30,10 @@ class GroupBan(bale.Bot):
         self.setup_events()
         self.last_request = datetime.now()
         self.make_persian = make_persian
+
+    @property
+    def base_messages(self):
+        return messages
 
     def make_db(self):
         return DB(config.DATABASE)

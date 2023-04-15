@@ -8,20 +8,27 @@ class Commands:
     def __init__(self, bot: "GroupBan"):
         self.bot = bot
 
+    @property
+    def commands(self):
+        return ["/commands", "/auto_answer", "/auto-answer", "/groupinfo"]
+
     def setup(self):
         return {
             self.when_send_command: "message"
         }
 
     async def when_send_command(self, message: bale.Message):
-        if not message.content in ["/auto_answer", "/auto-answer", "/groupinfo"]:
+        if not message.content in self.commands:
             return
 
         if not message.chat.type.is_group_chat():
             return await message.chat.send("❌ *تنها امکان ارسال این دستور در گروه امکان پذیر است*")
 
-        if message.content in ["/auto-answer", "/auto_answer"]:
-            return await message.chat.send("💡 *پاسخگویی خودکار*\n```[پاسخگویی خودکار چیست؟]*در این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که کاربر با فرستادن آن ها پاسخ های مشخصی را دریافت می نماید.*\n✏ مثال\n⬅ دیسکورد\n- دیسکورد ما: https://discord.com/invite/...```➕ *دستور اضافه کردن پاسخگو*\n*/aa-add*\n➖ *دستور پاک کردن پاسخگو*\n*/aa-remove*")
+        if message.content == "/commands":
+            return await message.chat.send("💠 *لیست خدمات اصلی ربات*\n\n🔧 [تنظیم کانفیگ کلی ربات](send:/setup)\n🔧 [تنظیم بخش پاسخگویی خودکار](send:/auto_answer)\n🔧 [تنظیم بخش حذف کلمه](send:/bad_words)\n\n💠 *لیست خدمات فرعی ربات*\n\n🔧 [دریافت اطلاعات گروه](send:/groupinfo)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.")
+
+        elif message.content in ["/auto-answer", "/auto_answer"]:
+            return await message.chat.send("🤖 *پاسخگویی خودکار*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که _کاربران عادی_ با فرستادن آن ها پاسخ های مشخصی را دریافت می نماید.\n\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن پاسخگو\n[/aa-add](send:/aa-add)\n➖ دستور پاک کردن پاسخگو\n[/aa-remove](send:/aa-remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.")
 
         elif message.content == "/groupinfo":
             groupinfo = await self.render_chat_info(message.chat)
