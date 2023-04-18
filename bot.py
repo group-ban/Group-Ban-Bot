@@ -82,14 +82,23 @@ class GroupBan(bale.Bot):
         """
         for (persian_num, english_num) in persianNumbers:
             text = text.replace(english_num, persian_num)
-        return await super().send_message(chat_id, text, components=components,
-                                          reply_to_message_id=reply_to_message_id)
+        try:
+            return await super().send_message(chat_id, text, components=components, reply_to_message_id=reply_to_message_id)
+        except bale.BaleError as exc:
+            if str(exc.message).lower() == "0: internal error":
+                await asyncio.sleep(0.5)
+                return await super().send_message(chat_id, text, components=components, reply_to_message_id=reply_to_message_id)
 
     async def edit_message(self, chat_id: str | int, message_id: str | int, text: str, *,
                            components = None) -> "Message":
         for (persian_num, english_num) in persianNumbers:
             text = text.replace(english_num, persian_num)
-        return await super().edit_message(chat_id, message_id, text, components=components)
+        try:
+            return await super().edit_message(chat_id, message_id, text, components=components)
+        except bale.BaleError as exc:
+            if str(exc.message).lower() == "0: internal error":
+                await asyncio.sleep(0.5)
+                return await super().edit_message(chat_id, message_id, text, components=components)
 
 bot = GroupBan()
 async def check_bot_work():
