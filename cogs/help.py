@@ -11,7 +11,7 @@ class Help:
 
 	@property
 	def commands(self):
-		return ["/start", "/help"]
+		return ["/start", "/help", "/donate"]
 
 	def setup(self):
 		return {
@@ -25,6 +25,9 @@ class Help:
 			if message.chat.type.is_group_chat():
 				return await message.reply("🤖 *ربات گروه بان، آماده ارائه خدمات در گروه می باشد*\n\n⛏ * [دستورات](send:/commands) *\n📔 * [داکیومنت ربات](https://groupban.ir/commands) *\n💎 * [خرید پریمیوم گروه بان](https://groupban.ir/premium) *\n\n📺 *تبلیغات* - [سفارش تبلیغ](https://groupban.ir/tabligh)\nطراحی سایت و برنامه نویسی انواع نرم افزار های سیستم عامل ویندوز و اندروید\nhttps://kian-ahmadian.ir\n\n⚖ *نقض قوانین «گروه بان» بن به همراه دارد.*", components=self.bot.components.site_and_support_buttons())
 			return await message.author.send("🤖 *به ربات گروه بان خوش آمدید*\n\n💎 با اضافه کردن گروه بان به گروه، امنیت اعضای گروه را تضمین کنید!\n\n⚖ *نقض قوانین «گروه بان» بن به همراه دارد*", components=self.bot.components.help_command())
+
+		elif message.content == "/donate":
+			return await message.reply("❤ *دونیت به مجموعه گروه بان*\n\nشما میتوانید از طریق سرویس پرداخت امن آی دی پی (idpay) مبلغ مورد نظر خود را به مجموعه گروه بان اهدا نمائید.", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("اهدا به مجموعه گروه بان", url="https://idpay.ir/group-ban")]))
 
 	async def when_user_join_me(self, message: bale.Message, chat: bale.Chat, user: bale.User):
 		if chat.type.is_group_chat() and user.user_id == self.bot.user.user_id:
