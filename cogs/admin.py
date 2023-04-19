@@ -31,7 +31,7 @@ class Admin:
 
 	@property
 	def commands(self):
-		return {"/setup": self.group_setup, "/auto_answer": self.auto_answer, "/auto-answer": self.auto_answer, "/aa": self.auto_answer, "/aa add": self.auto_answer_add, "/aa remove": self.auto_answer_remove}
+		return {"/setup": self.group_setup, "/auto_answer": self.auto_answer, "/auto-answer": self.auto_answer, "/aa": self.auto_answer, "/aa add": self.auto_answer_add, "/aa remove": self.auto_answer_remove, "/anti_word": self.anti_word, "/anti-word": self.anti_word, "/aw": self.anti_word, "/aw add": self.anti_word_add, "/aw remove": self.anti_word_remove}
 
 	def setup(self):
 		return {
@@ -67,7 +67,7 @@ class Admin:
 
 		try:
 			render_message = await message.author.send(first_render)
-			action_message = await message.author.send("🚀 🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *", components=self.bot.components.setup_command())
+			action_message = await message.author.send("🔷 *لطفا بخش مورد نظر خود را از طریق دکمه های زیر انتخاب کنید:*\n\n*☝ شما میتوانید وضعیت فعلی امکانات ربات را به صورت زنده بررسی نمائید. *", components=self.bot.components.setup_command())
 		except:
 			return await check_message.edit("❌ *امکان ارسال پیام به شما وجود ندارد، لطفا محدودیت هارا برداشته یک بار به شخصی ربات پیام بدهید*")
 
@@ -98,7 +98,7 @@ class Admin:
 				await render_message.edit(render_chat_info(connection, message.chat))
 
 		connection.close()
-		return await render_message.reply("💠 *نغییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) در گروه خود استفاده نمائید")
+		return await render_message.reply("💠 *تغییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) در گروه خود استفاده نمائید")
 
 	async def auto_answer(self, message: bale.Message, check_message: bale.Message):
 		with self.bot.make_db() as connection:
@@ -120,7 +120,7 @@ class Admin:
 			if not (20 >= len(se_1.content) >= 2):
 				return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
 			await message.chat.send(
-				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید\n💡 عبارت شما میبایست حداقل *2* کاراکتر و حداکثر *20* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید".format(se_1.content))
+				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید\n💡 عبارت شما میبایست حداقل *2* کاراکتر و حداکثر *60* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید".format(se_1.content))
 			try:
 				se_2: bale.Message = await self.bot.wait_for("message", check=lambda
 					m: m.chat == message.chat and m.author == message.author, timeout=30.0)
@@ -130,9 +130,9 @@ class Admin:
 			else:
 				if se_2.content in ["/cancel", "کنسل"]:
 					return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
-				if not (20 >= len(se_2.content) >= 2):
+				if not (60 >= len(se_2.content) >= 2):
 					return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
-				load_msg = await message.chat.send("📡 *در حال برقراری ارتباط با مرکز...*")
+				load_msg = await message.chat.send(self.bot.base_messages["wait"])
 				with self.bot.make_db() as connection:
 					cursor = connection.cursor()
 					cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1.content, message.chat_id))
@@ -156,7 +156,7 @@ class Admin:
 		else:
 			if se_1.content in ["/cancel", "کنسل"]:
 				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
-			load_msg = await message.chat.send("📡 *در حال برقراری ارتباط با مرکز...*")
+			load_msg = await message.chat.send(self.bot.base_messages["wait"])
 			with self.bot.make_db() as connection:
 				cursor = connection.cursor()
 				cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1.content, message.chat_id))
@@ -174,3 +174,52 @@ class Admin:
 			cursor.execute("SELECT word FROM bad_words WHERE chat_id = '{}'".format(message.chat.chat_id))
 			result = cursor.fetchall()
 		return await check_message.edit("🤖 *ضد کلمه*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که در هنگام ارسال این کلمات توسط _کاربران عادی_ پیام ارسال شده از طرف وی پاک خواهد شد.\n\n```[لیست کلمه های محدود شده]{}```\n\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن کلمه بد\n[/aw add](send:/aa-add)\n➖ دستور پاک کردن کلمه بد\n[/aw remove](send:/aa-remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format("\n".join([f"⭕ {word}" for word in result]) if bool(result) else "❌ *در حاضر کلمه ای در چت محدود نشده است*"))
+
+	async def anti_word_add(self, message: bale.Message, check_message: bale.Message):
+		await check_message.edit(
+			"🔷 *ساخت محدودیت جدید*\nلطفا *کلمه* که میخواهید با ارسال آن پیام پاک شود را وارد کنید\n💡 کلمه شما میبایست حداقل *2* کاراکتر و حداکثر *20* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
+		try:
+			word: bale.Message = await self.bot.wait_for("message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
+		except asyncio.TimeoutError:
+			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
+		else:
+			if word.content in ["/cancel", "کنسل"]:
+				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
+			if not (20 >= len(word.content) >= 2):
+				return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
+
+			load_msg = await message.chat.send(self.bot.base_messages["wait"])
+			with self.bot.make_db() as connection:
+				cursor = connection.cursor()
+				cursor.execute("SELECT * FROM bad_words WHERE word = '{}' AND chat_id = '{}'".format(word.content, message.chat_id))
+				if cursor.fetchone():
+					return await load_msg.edit("❌ *کلمه {} از قبل در دیتابیس وجود داشته است*".format(word.content))
+
+				cursor.execute("INSERT INTO bad_words(chat_id, word) VALUES (%s, %s)", (message.chat_id, word.content))
+				connection.commit()
+
+			await load_msg.edit("😉 *محدودیت مورد نظر با موفقیت اضافه شد*")
+
+	async def anti_word_remove(self, message: bale.Message, check_message: bale.Message):
+		await check_message.edit(
+			"🔷 *حذف محدودیت*\nلطفا *کلمه* ای را که میخواهید دیگر با ارسال آن محدودیتی ایجاد نشود را وارد نمائید")
+		try:
+			word: bale.Message = await self.bot.wait_for("message", check=lambda
+				m: m.chat == message.chat and m.author == message.author, timeout=30.0)
+		except asyncio.TimeoutError:
+			return await message.chat.send(
+				"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*")
+		else:
+			if word.content in ["/cancel", "کنسل"]:
+				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
+			load_msg = await message.chat.send(self.bot.base_messages["wait"])
+			with self.bot.make_db() as connection:
+				cursor = connection.cursor()
+				cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(word.content, message.chat_id))
+				if not cursor.fetchone():
+					return await load_msg.edit("❌ *کلمه {} از قبل در دیتابیس وجود نداشته است*".format(word.content))
+
+				cursor.execute("DELETE FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(word.content, message.chat_id))
+				connection.commit()
+
+			await load_msg.edit("😉 *محدودیت مورد نظر با موفقیت حذف شد*")
