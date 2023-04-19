@@ -28,7 +28,7 @@ class Filter:
             cursor.execute("SELECT word, answer FROM auto_answer WHERE chat_id = '{}'".format(message.chat.chat_id))
             auto_answer_dict = {word: answer for word, answer in cursor.fetchall()}
             cursor.execute("SELECT word FROM bad_words WHERE chat_id = '{}'".format(message.chat.chat_id))
-            bad_words = cursor.fetchall()
+            bad_words = [word for (word, ) in cursor.fetchall()]
         standard_content = self.bot.make_persian(message.content)
         try:
             member = await self.bot.get_chat_member(message.chat_id, message.author.user_id)
