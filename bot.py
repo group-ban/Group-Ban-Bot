@@ -106,7 +106,6 @@ async def check_bot_work():
         if isinstance(bot.loop, asyncio.AbstractEventLoop):
             break
     while not bot.is_closed():
-        now = datetime.now()
         if bot.last_request:
             if bot.last_request + timedelta(seconds=20) <= datetime.now():
                 bot._closed = True

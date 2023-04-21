@@ -6,7 +6,6 @@ class DB:
     def __init__(self, database_key):
         self.database_key = database_key
         self.db = connector.connect(**database_key)
-        
     def cursor(self):
         return self.db.cursor(buffered=True)
         

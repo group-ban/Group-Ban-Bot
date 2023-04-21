@@ -19,4 +19,4 @@ messages = {
 	"wait": "📡 *در حال برقراری ارتباط با سرور...*\n\n📞 [پشتیبانی ربات](https://groupban.ir/support)",
 }
 
-__all__ = (persianNumbers, Components, ConfigParser, make_persian)
+__all__ = ("persianNumbers", "Components", "ConfigParser", "make_persian")

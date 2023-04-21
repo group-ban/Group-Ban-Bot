@@ -32,7 +32,7 @@ class Filter:
         standard_content = self.bot.make_persian(message.content)
         try:
             member = await self.bot.get_chat_member(message.chat_id, message.author.user_id)
-        except:
+        except bale.BaleError:
             member = None
         if not member or not member.status.is_member():
             return
