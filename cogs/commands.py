@@ -4,6 +4,13 @@ import bale
 if TYPE_CHECKING:
     from ..bot import GroupBan
 
+def parse_admin_status(status: bale.ChatMemberStatus):
+    if status.is_admin():
+        return "ادمین"
+    elif status.is_owner():
+        return "سازنده چت"
+    return status
+
 class Commands:
     def __init__(self, bot: "GroupBan"):
         self.bot = bot
@@ -37,4 +44,4 @@ class Commands:
             admins = await chat.get_chat_administrators()
         except bale.BaleError:
             admins = None
-        return "👥 *اطلاعات اصلی گروه*\n🆔 شناسه یکتا گروه: {}\nℹ نام: {}\n\n👮‍♂️ *اطلاعات ادمینان گروه*\n{}\n\n💻 [سایت گروه بان](https://groupban.ir)".format(chat.chat_id, chat.title, "\n".join(["👤 {} | {}".format(admin.user.first_name, admin.status.status) for admin in admins]) if admins else "❌ به دلیل کمبود دسترسی، امکان دریافت ادمین هارا ندارم")
+        return "👥 *اطلاعات اصلی گروه*\n🆔 شناسه یکتا گروه: {}\nℹ نام: {}\n\n👮‍♂️ *اطلاعات ادمینان گروه*\n{}\n\n💻 [سایت گروه بان](https://groupban.ir)".format(chat.chat_id, chat.title, "\n".join(["👤 {} | {}".format(admin.user.first_name, parse_admin_status(admin.status.status)) for admin in admins]) if admins else "❌ به دلیل کمبود دسترسی، امکان دریافت ادمین هارا ندارم")
