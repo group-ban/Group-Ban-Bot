@@ -1,5 +1,6 @@
 from .components import Components
 from .config import ConfigParser
+from .ratelimit import UserRateLimit
 from farsi_tools import standardize_persian_text as make_persian
 
 persianNumbers = (
@@ -17,6 +18,9 @@ persianNumbers = (
 
 messages = {
 	"wait": "📡 *در حال برقراری ارتباط با سرور...*\n\n📞 [پشتیبانی ربات](https://groupban.ir/support)",
+	"only_group": "❌ *تنها امکان ارسال این دستور در گروه ها امکان پذیر است*",
+	"only_pv": "❌ *تنها امکان ارسال این دستور در پیوی ربات امکان پذیر است*",
+	"miss_permission": "❌ *برای اجرای این دستور به دسترسی کامل در گروه نیاز است؛ لطفا ربات را ادمین نمائید*"
 }
 
-__all__ = ("persianNumbers", "Components", "ConfigParser", "make_persian")
+__all__ = ("persianNumbers", "Components", "ConfigParser", "make_persian", "UserRateLimit")
