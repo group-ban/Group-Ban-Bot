@@ -44,4 +44,4 @@ class Commands:
             admins = await chat.get_chat_administrators()
         except bale.BaleError:
             admins = None
-        return "👥 *اطلاعات اصلی گروه*\n🆔 شناسه یکتا گروه: {}\nℹ نام: {}\n\n👮‍♂️ *اطلاعات ادمینان گروه*\n{}\n\n💻 [سایت گروه بان](https://groupban.ir)".format(chat.chat_id, chat.title, "\n".join(["👤 {} | {}".format(admin.user.first_name, parse_admin_status(admin.status.status)) for admin in admins]) if admins else "❌ به دلیل کمبود دسترسی، امکان دریافت ادمین هارا ندارم")
+        return "👥 *اطلاعات اصلی گروه*\n🆔 شناسه یکتا گروه: {}\nℹ نام: {}\n\n👮‍♂️ *اطلاعات ادمینان گروه*\n{}\n\n💻 [سایت گروه بان](https://groupban.ir)".format(chat.chat_id, chat.title, "\n".join(["👤 {} | {}".format(admin.user.first_name, parse_admin_status(admin.status)) for admin in admins]) if admins else "❌ به دلیل کمبود دسترسی، امکان دریافت ادمین هارا ندارم")
