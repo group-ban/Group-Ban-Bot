@@ -6,8 +6,8 @@ import asyncio
 import bale
 from bale import Message, Update
 from threading import Thread
-from cogs import Admin, Help, Filter, Commands
 from utils import persianNumbers, Components, ConfigParser, make_persian, messages
+from cogs import Admin, Help, Filter, Commands
 from database import DB
 from datetime import datetime, timedelta
 
@@ -95,7 +95,7 @@ class GroupBan(bale.Bot):
             text = text.replace(english_num, persian_num)
         try:
             return await super().edit_message(chat_id, message_id, text, components=components)
-        except Exception as exc:
+        except bale.BaleError as exc:
             if str(exc).lower() == "0: internal server error":
                 await asyncio.sleep(0.5)
                 return await super().edit_message(chat_id, message_id, text, components=components)
