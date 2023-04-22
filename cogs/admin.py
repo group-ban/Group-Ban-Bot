@@ -60,7 +60,7 @@ class Admin:
 	async def group_setup(self, message: bale.Message, check_message: bale.Message):
 		connection = self.bot.make_db()
 
-		first_render = render_chat_info(connection, message.chat)
+		first_render = render_chat_info(connection, message.chat, "\n\n👇 *شما میتوانید با استفاده از دکمه های پیام زیر، تنظیمات را تغییر دهید.*")
 		if not first_render:
 			return await check_message.edit("❌ *این چت در دیتابیس یافت نشد؛ لطفا ربات را کیک کرده و دوباره به گروه اضافه کنید*")
 
