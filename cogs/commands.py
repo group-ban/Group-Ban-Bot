@@ -22,7 +22,7 @@ class Commands:
             return
 
         if not message.chat.type.is_group_chat():
-            return await message.chat.send("❌ *تنها امکان ارسال این دستور در گروه امکان پذیر است*")
+            return await message.chat.send(self.bot.base_messages["only_group"])
 
         if message.content == "/commands":
             return await message.chat.send("⛏ *دستورات ربات*\n\n💠 *دستورات خدمات اصلی*\n\n🔧 [تنظیم کانفیگ کلی ربات](send:/setup)\n🔧 [تنظیم بخش پاسخگویی خودکار](send:/auto_answer)\n🔧 [تنظیم بخش حذف کلمه](send:/anti_word)\n\n💠 *دستورات خدمات فرعی*\n\n🔧 [دریافت اطلاعات گروه](send:/groupinfo)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.", components=self.bot.components.site_and_support_buttons())

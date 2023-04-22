@@ -5,7 +5,7 @@ if TYPE_CHECKING:
 	from ..bot import GroupBan, DB
 
 
-def render_chat_info(connection: "DB", chat: bale.Chat):
+def render_chat_info(connection: "DB", chat: bale.Chat, more_text = ""):
 	render_bool = lambda state: "فعال" if state else "غیر فعال"
 	cursor = connection.cursor()
 	cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_word, auto_answer FROM chat WHERE chat_id = '{}'".format(chat.chat_id))
@@ -14,7 +14,7 @@ def render_chat_info(connection: "DB", chat: bale.Chat):
 		return
 	(anti_spam, anti_link, anti_mention, anti_word, auto_answer) = result
 
-	return "💠 *ستاپ کردن ربات در گروه {}*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 آنتی اسپم: {}\n🔧 آنتی لینک: {}\n🔧 آنتی منشن: {}\n🔧 آنتی ورد: {}\n🔧 پاسخگویی خودکار: {}\n\n👇 *شما میتوانید با استفاده از دکمه های پیام زیر، تنظیمات را تغییر دهید.*".format(
+	return "💠 *ستاپ کردن ربات در گروه {}*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 ضد اسپم: {}\n🔧 ضد لینک: {}\n🔧 ضد منشن: {}\n🔧 ضد کلمه: {}\n🔧 وضعیت پاسخگویی خودکار: {}".format(
 		chat.title,
 		chat.chat_id,
 		render_bool(anti_spam),
@@ -22,7 +22,7 @@ def render_chat_info(connection: "DB", chat: bale.Chat):
 		render_bool(anti_mention),
 		render_bool(anti_word),
 		render_bool(auto_answer)
-	)
+	) + more_text
 
 
 class Admin:
@@ -43,14 +43,13 @@ class Admin:
 			return
 
 		if not message.chat.type.is_group_chat():
-			return await message.chat.send("❌ *این دستور تنها مختص به گروه های دارای ربات گروهبان میباشد*")
+			return await message.chat.send(self.bot.base_messages["only_group"])
 
 		check_message = await message.chat.send(self.bot.base_messages["wait"])
 		try:
 			member = await self.bot.get_chat_member(message.chat_id, str(message.author.user_id))
 		except bale.BaleError:
-			return await check_message.edit(
-				"❌ *من فاقد دسترسی ادمین با دسترسی کامل هستم، لطفا دسترسی را داده و مجددا دستور را ارسال کنید!*")
+			return await check_message.edit(self.bot.base_messages["miss_permission"])
 		else:
 			if member.status.is_member():
 				return await check_message.edit("❌ *شما ادمین چت نیستید*")
@@ -77,7 +76,6 @@ class Admin:
 			try:
 				action: bale.CallbackQuery = await self.bot.wait_for("callback", check = lambda c: c.user == message.author and c.message.message_id == action_message.message_id, timeout = 60.0)
 			except asyncio.TimeoutError:
-				await render_message.delete()
 				await action_message.delete()
 				break
 			else:
@@ -95,8 +93,9 @@ class Admin:
 				))
 				connection.commit()
 
-				await render_message.edit(render_chat_info(connection, message.chat))
+				await render_message.edit(render_chat_info(connection, message.chat, "\n\n👇 *شما میتوانید با استفاده از دکمه های پیام زیر، تنظیمات را تغییر دهید.*"))
 
+		await render_message.edit(render_chat_info(connection, message.chat))
 		connection.close()
 		return await render_message.reply("💠 *تغییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) در گروه خود استفاده نمائید")
 
