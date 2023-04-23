@@ -85,9 +85,9 @@ class GroupBan(bale.Bot):
         try:
             return await super().send_message(chat_id, text, components=components, reply_to_message_id=reply_to_message_id)
         except bale.BaleError as exc:
-            if str(exc.message).lower() == "0: internal server error":
-                await asyncio.sleep(0.5)
-                return await super().send_message(chat_id, text, components=components, reply_to_message_id=reply_to_message_id)
+            if exc.message == "0: Internal server error":
+                await self.send_message(chat_id, self.base_messages["internal_error"])
+                raise exc
 
     async def edit_message(self, chat_id: str | int, message_id: str | int, text: str, *,
                            components = None) -> "Message":
@@ -96,9 +96,9 @@ class GroupBan(bale.Bot):
         try:
             return await super().edit_message(chat_id, message_id, text, components=components)
         except bale.BaleError as exc:
-            if str(exc).lower() == "0: internal server error":
-                await asyncio.sleep(0.5)
-                return await super().edit_message(chat_id, message_id, text, components=components)
+            if exc.message == "0: Internal server error":
+                await self.delete_message(chat_id, message_id)
+                return await self.send_message(chat_id, text)
 
 bot = GroupBan()
 async def check_bot_work():
