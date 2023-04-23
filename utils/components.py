@@ -10,3 +10,6 @@ class Components:
 
     def site_and_support_buttons(self):
         return C(inline_keyboards=[[InlineKeyboard("سایت گروه بان", url="https://groupban.ir/"), InlineKeyboard("پشتیبانی ربات", url="https://groupban.ir/support")]])
+
+    def about_command(self):
+        return C(inline_keyboards=[[InlineKeyboard("گیت هاب گروه بان", url="https://github.com/group-ban")], InlineKeyboard("گیت هاب کتابخانه بله بات (python-bale-bot)", url="https://github.com/python-bale-bot")])
