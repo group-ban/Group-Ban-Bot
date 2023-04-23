@@ -21,7 +21,7 @@ class Commands:
 
     def setup(self):
         return {
-            self.when_send_command: "message"
+            self.when_send_command: "verified_message"
         }
 
     async def when_send_command(self, message: bale.Message):
