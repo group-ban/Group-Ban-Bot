@@ -35,7 +35,7 @@ class Admin:
 
 	def setup(self):
 		return {
-			self.when_admin_send_message: "message"
+			self.when_admin_send_message: "verified_message"
 		}
 
 	async def when_admin_send_message(self, message: bale.Message):
@@ -104,13 +104,13 @@ class Admin:
 			cursor = connection.cursor()
 			cursor.execute("SELECT word, answer FROM auto_answer WHERE chat_id = '{}'".format(message.chat.chat_id))
 			result = cursor.fetchall()
-		return await check_message.edit("🤖 *پاسخگویی خودکار*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که _کاربران عادی_ با فرستادن آن ها پاسخ های مشخصی را دریافت می نماید.\n```[لیست پاسخگو های فعال]{}````\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن پاسخگو\n[/aa add](send:/aa add)\n➖ دستور پاک کردن پاسخگو\n[/aa remove](send:/aa remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format("\n".join([f"💬 {word}\n⬅ {answer}" for word, answer in result]) if bool(result) else "❌ *در حال حاضر پاسخگویی در این چت فعال نیست*"))
+		return await check_message.edit("🤖 *پاسخگویی خودکار*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که _کاربران عادی_ با فرستادن آن ها پاسخ های مشخصی را دریافت می نماید.\n```[لیست پاسخگو های فعال]{}```\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن پاسخگو\n[/aa add](send:/aa add)\n➖ دستور پاک کردن پاسخگو\n[/aa remove](send:/aa remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format("\n".join([f"💬 {word}\n⬅ {answer}" for word, answer in result]) if bool(result) else "❌ *در حال حاضر پاسخگویی در این چت فعال نیست*"))
 
 	async def auto_answer_add(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
 			"🔷 *ساخت پاسخگوی جدید - مرحله اول*\nلطفا *کلمه* که میخواهید با ارسال آن پاسخی برای کاربر ارسال شود را وارد کنید\n💡 کلمه شما میبایست حداقل *2* کاراکتر و حداکثر *20* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
 		try:
-			se_1: bale.Message = await self.bot.wait_for("message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
+			se_1: bale.Message = await self.bot.wait_for("verified_message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
 		except asyncio.TimeoutError:
 			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
 		else:
@@ -121,7 +121,7 @@ class Admin:
 			await message.chat.send(
 				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید\n💡 عبارت شما میبایست حداقل *2* کاراکتر و حداکثر *60* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید".format(se_1.content))
 			try:
-				se_2: bale.Message = await self.bot.wait_for("message", check=lambda
+				se_2: bale.Message = await self.bot.wait_for("verified_message", check=lambda
 					m: m.chat == message.chat and m.author == message.author, timeout=30.0)
 			except asyncio.TimeoutError:
 				return await message.chat.send(
@@ -147,7 +147,7 @@ class Admin:
 		await check_message.edit(
 			"🔷 *حذف پاسخگو*\nلطفا *کلمه* ای را که میخواهید دیگر با ارسال آن پاسخی ارسال نگردد را وارد نمائید")
 		try:
-			se_1: bale.Message = await self.bot.wait_for("message", check=lambda
+			se_1: bale.Message = await self.bot.wait_for("verified_message", check=lambda
 				m: m.chat == message.chat and m.author == message.author, timeout=30.0)
 		except asyncio.TimeoutError:
 			return await message.chat.send(
@@ -172,13 +172,13 @@ class Admin:
 			cursor = connection.cursor()
 			cursor.execute("SELECT word FROM bad_words WHERE chat_id = '{}'".format(message.chat.chat_id))
 			result = cursor.fetchall()
-		return await check_message.edit("🤖 *ضد کلمه*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که در هنگام ارسال این کلمات توسط _کاربران عادی_ پیام ارسال شده از طرف وی پاک خواهد شد.\n\n```[لیست کلمه های محدود شده]{}```\n\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن کلمه بد\n[/aw add](send:/aa-add)\n➖ دستور پاک کردن کلمه بد\n[/aw remove](send:/aa-remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format("\n".join([f"⭕ {word}" for word in result]) if bool(result) else "❌ *در حاضر کلمه ای در چت محدود نشده است*"))
+		return await check_message.edit("🤖 *ضد کلمه*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که در هنگام ارسال این کلمات توسط _کاربران عادی_ پیام ارسال شده از طرف وی پاک خواهد شد.\n\n```[لیست کلمه های محدود شده]{}```\n\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن کلمه بد\n[/aw add](send:/aw add)\n➖ دستور پاک کردن کلمه بد\n[/aw remove](send:/aw remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format("\n".join([f"⭕ {word}" for (word, ) in result]) if bool(result) else "❌ *در حاضر کلمه ای در چت محدود نشده است*"))
 
 	async def anti_word_add(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
 			"🔷 *ساخت محدودیت جدید*\nلطفا *کلمه* که میخواهید با ارسال آن پیام پاک شود را وارد کنید\n💡 کلمه شما میبایست حداقل *2* کاراکتر و حداکثر *20* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
 		try:
-			word: bale.Message = await self.bot.wait_for("message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
+			word: bale.Message = await self.bot.wait_for("verified_message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
 		except asyncio.TimeoutError:
 			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
 		else:
@@ -203,7 +203,7 @@ class Admin:
 		await check_message.edit(
 			"🔷 *حذف محدودیت*\nلطفا *کلمه* ای را که میخواهید دیگر با ارسال آن محدودیتی ایجاد نشود را وارد نمائید")
 		try:
-			word: bale.Message = await self.bot.wait_for("message", check=lambda
+			word: bale.Message = await self.bot.wait_for("verified_message", check=lambda
 				m: m.chat == message.chat and m.author == message.author, timeout=30.0)
 		except asyncio.TimeoutError:
 			return await message.chat.send(
