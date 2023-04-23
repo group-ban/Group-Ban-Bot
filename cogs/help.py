@@ -15,7 +15,8 @@ class Help:
 
 	def setup(self):
 		return {
-			self.when_message: "message",
+			self.when_message: "verified_message",
+			self.when_message_not_verified: "unverified_message",
 			self.when_user_join_me: "member_chat_join",
 			self.when_user_kicked_me: "member_chat_leave"
 		}
@@ -30,7 +31,15 @@ class Help:
 			return await message.chat.send("❤ *دونیت به مجموعه گروه بان*\n\nشما میتوانید از طریق سرویس پرداخت امن آی دی پی (idpay) مبلغ مورد نظر خود را به مجموعه گروه بان اهدا نمائید.", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("اهدا به مجموعه گروه بان", url="https://idpay.ir/group-ban")]))
 
 		elif message.content == "/about":
-			return await message.chat.send("〽 *درباره مجموعه گروه بان*\n\n👥 توسعه داده شده توسط *K.A - A.M - K.G*\n\n👨‍💻 این بازو به وسیله زبان قدرتمند *پایتون* و کتابخانه *python-bale-bot* طراحی و برنامه نویسی شده است. همچنین این پروژه به صورت متن باز (Open Source) در گیت هاب مجموعه قرار دارد.\n\n🔆 بهار 1402", components=self.bot.components.site_and_support_buttons())
+			return await message.chat.send("〽 *درباره مجموعه گروه بان*\n\n👥 توسعه داده شده توسط *K.A - A.M - K.G*\n\n👨‍💻 این بازو به وسیله زبان قدرتمند *پایتون* و کتابخانه *python-bale-bot* طراحی و برنامه نویسی شده است. همچنین این پروژه به صورت متن باز (Open Source) در گیت هاب مجموعه قرار دارد.\n\n🔆 بهار 1402", components=self.bot.components.about_command())
+
+	async def when_message_not_verified(self, message: bale.Message):
+		if message.chat.type.is_group_chat():
+			if message.content and message.content.startswith("/"):
+				return await message.chat.send("❌ *متاستفم؛ امکان درک پیام شمارا ندارم*\n🚀 لطفا یک بار ربات را کیک کرده و مجددا به گروه دعوت نمائید. و در صورتی که مشکل برطرف نشد با پشتیبانی *گروه بان* ارتباط بگیرید.\n\n📞 [پشتیبانی](https://groupban.ir/support)")
+
+		elif message.chat.type.is_private_chat():
+			return await message.chat.send("❌ *متاستفم؛ امکان درک پیام شمارا ندارم*\n\n⭕ این یک مشکل جدی است و پیشنهاد میکنیم برای حل مشکل به پشتیبانی *گروه بان* مراجعه نمائید.\n\n📞 [پشتیبانی](https://groupban.ir/support)")
 
 	async def when_user_join_me(self, message: bale.Message, chat: bale.Chat, user: bale.User):
 		if chat.type.is_group_chat() and user.user_id == self.bot.user.user_id:

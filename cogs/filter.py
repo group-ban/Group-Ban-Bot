@@ -27,15 +27,14 @@ class Filter:
 
     async def when_send_message_in_group(self, message: bale.Message):
         if not message.chat.type.is_group_chat():
-            return
-
+            return self.bot.dispatch("verified_message", message)
 
         with self.bot.make_db() as connection:
             cursor = connection.cursor()
             cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_word, auto_answer FROM chat WHERE chat_id = '{}'".format(message.chat.chat_id))
             filters = cursor.fetchone()
             if not filters:
-                return
+                return self.bot.dispatch("unverified_message", message)
             (anti_spam, anti_link, anti_mention, anti_word, auto_answer) = filters
             cursor.execute("SELECT word, answer FROM auto_answer WHERE chat_id = '{}'".format(message.chat.chat_id))
             auto_answer_dict = {word: answer for word, answer in cursor.fetchall()}
@@ -47,7 +46,7 @@ class Filter:
         except bale.BaleError:
             member = None
         if not member or not member.status.is_member():
-            return
+            return self.bot.dispatch("verified_message", message)
 
         user_spam_state = self.chat_member_have_rate_limit(message, int(message.chat_id), int(message.author.user_id))
         if anti_spam and user_spam_state:
@@ -64,3 +63,5 @@ class Filter:
 
         if auto_answer and auto_answer_dict.get(standard_content):
             return await message.chat.send(auto_answer_dict.get(standard_content))
+
+        self.bot.dispatch("verified_message", message)
