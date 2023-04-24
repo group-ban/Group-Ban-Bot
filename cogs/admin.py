@@ -8,19 +8,20 @@ if TYPE_CHECKING:
 def render_chat_info(connection: "DB", chat: bale.Chat, more_text = ""):
 	render_bool = lambda state: "فعال" if state else "غیر فعال"
 	cursor = connection.cursor()
-	cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_word, auto_answer FROM chat WHERE chat_id = '{}'".format(chat.chat_id))
+	cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_word, anti_forward, auto_answer FROM chat WHERE chat_id = '{}'".format(chat.chat_id))
 	result = cursor.fetchone()
 	if not result:
 		return
-	(anti_spam, anti_link, anti_mention, anti_word, auto_answer) = result
+	(anti_spam, anti_link, anti_mention, anti_word, anti_forward, auto_answer) = result
 
-	return "💠 *ستاپ کردن ربات در گروه {}*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 ضد اسپم: {}\n🔧 ضد لینک: {}\n🔧 ضد منشن: {}\n🔧 ضد کلمه: {}\n🔧 وضعیت پاسخگویی خودکار: {}".format(
+	return "💠 *ستاپ کردن ربات در گروه {}*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 ضد اسپم: {}\n🔧 ضد لینک: {}\n🔧 ضد منشن: {}\n🔧 ضد کلمه: {}\n🔧 ضد بازارسال: {}\n🔧 وضعیت پاسخگویی خودکار: {}".format(
 		chat.title,
 		chat.chat_id,
 		render_bool(anti_spam),
 		render_bool(anti_link),
 		render_bool(anti_mention),
 		render_bool(anti_word),
+		render_bool(anti_forward),
 		render_bool(auto_answer)
 	) + more_text
 
@@ -83,7 +84,7 @@ class Admin:
 					await action_message.delete()
 					break
 
-				if not action.data in ["anti_spam", "anti_link", "anti_mention", "anti_word", "auto_answer"]:
+				if not action.data in ["anti_spam", "anti_link", "anti_mention", "anti_word", "anti_forward", "auto_answer"]:
 					continue
 
 				cursor = connection.cursor()
@@ -114,11 +115,12 @@ class Admin:
 		except asyncio.TimeoutError:
 			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
 		else:
+			await se_1.delete()
 			if se_1.content in ["/cancel", "کنسل"]:
 				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
 			if not (20 >= len(se_1.content) >= 2):
 				return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
-			await message.chat.send(
+			await check_message.edit(
 				"🔷 *ساخت پاسخگوی جدید - مرحله دوم*\nلطفا *عبارتی* که میخواهید کاربر با ارسال *{}* آن را دریافت نماید را وارد کنید\n💡 عبارت شما میبایست حداقل *2* کاراکتر و حداکثر *60* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید".format(se_1.content))
 			try:
 				se_2: bale.Message = await self.bot.wait_for("verified_message", check=lambda
@@ -127,21 +129,22 @@ class Admin:
 				return await message.chat.send(
 					"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
 			else:
+				await se_2.delete()
 				if se_2.content in ["/cancel", "کنسل"]:
-					return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
+					return await check_message.edit("❌ *عملیات توسط شما لغو شد*")
 				if not (60 >= len(se_2.content) >= 2):
-					return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
-				load_msg = await message.chat.send(self.bot.base_messages["wait"])
+					return await check_message.edit("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
+				await check_message.edit(self.bot.base_messages["wait"])
 				with self.bot.make_db() as connection:
 					cursor = connection.cursor()
 					cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1.content, message.chat_id))
 					if cursor.fetchone():
-						return await load_msg.edit("❌ *کلمه {} از قبل در دیتابیس وجود داشته است*".format(se_1.content))
+						return await check_message.edit("❌ *کلمه {} از قبل در دیتابیس وجود داشته است*".format(se_1.content))
 
 					cursor.execute("INSERT INTO auto_answer(chat_id, word, answer) VALUES (%s, %s, %s)", (message.chat_id, se_1.content, se_2.content))
 					connection.commit()
 
-				await load_msg.edit("😉 *پاسخگوی مورد نظر با موفقیت اضافه شد*")
+				await check_message.edit("😉 *پاسخگوی مورد نظر با موفقیت اضافه شد*")
 
 	async def auto_answer_remove(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
@@ -153,19 +156,20 @@ class Admin:
 			return await message.chat.send(
 				"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*")
 		else:
+			await se_1.delete()
 			if se_1.content in ["/cancel", "کنسل"]:
-				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
-			load_msg = await message.chat.send(self.bot.base_messages["wait"])
+				return await check_message.edit("❌ *عملیات توسط شما لغو شد*")
+			await check_message.edit(self.bot.base_messages["wait"])
 			with self.bot.make_db() as connection:
 				cursor = connection.cursor()
 				cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1.content, message.chat_id))
 				if not cursor.fetchone():
-					return await load_msg.edit("❌ *کلمه {} از قبل در دیتابیس وجود نداشته است*".format(se_1.content))
+					return await check_message.edit("❌ *کلمه {} از قبل در دیتابیس وجود نداشته است*".format(se_1.content))
 
 				cursor.execute("DELETE FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(se_1.content, message.chat_id))
 				connection.commit()
 
-			await load_msg.edit("😉 *پاسخگوی مورد نظر با موفقیت حذف شد*")
+			await check_message.edit("😉 *پاسخگوی مورد نظر با موفقیت حذف شد*")
 
 	async def anti_word(self, message: bale.Message, check_message: bale.Message):
 		with self.bot.make_db() as connection:
