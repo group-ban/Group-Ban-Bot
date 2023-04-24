@@ -26,16 +26,18 @@ class Filter:
         return ratelimit.user_is_rate_limited(message)
 
     async def when_send_message_in_group(self, message: bale.Message):
+        if not message.author:
+            return
         if not message.chat.type.is_group_chat():
             return self.bot.dispatch("verified_message", message)
 
         with self.bot.make_db() as connection:
             cursor = connection.cursor()
-            cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_word, auto_answer FROM chat WHERE chat_id = '{}'".format(message.chat.chat_id))
+            cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_word, anti_forward, auto_answer FROM chat WHERE chat_id = '{}'".format(message.chat.chat_id))
             filters = cursor.fetchone()
             if not filters:
                 return self.bot.dispatch("unverified_message", message)
-            (anti_spam, anti_link, anti_mention, anti_word, auto_answer) = filters
+            (anti_spam, anti_link, anti_mention, anti_word, anti_forward, auto_answer) = filters
             cursor.execute("SELECT word, answer FROM auto_answer WHERE chat_id = '{}'".format(message.chat.chat_id))
             auto_answer_dict = {word: answer for word, answer in cursor.fetchall()}
             cursor.execute("SELECT word FROM bad_words WHERE chat_id = '{}'".format(message.chat.chat_id))
@@ -53,6 +55,9 @@ class Filter:
             return await message.delete()
 
         if (anti_link and re.search("(?P<url>https?://[^\s]+)", standard_content)) or (anti_mention and re.search("(?<=@)\w+", standard_content)):
+            return await message.delete()
+
+        if anti_forward and message.forward_from_message_id:
             return await message.delete()
 
         if anti_word:
