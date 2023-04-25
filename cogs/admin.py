@@ -218,11 +218,11 @@ class Admin:
 			load_msg = await message.chat.send(self.bot.base_messages["wait"])
 			with self.bot.make_db() as connection:
 				cursor = connection.cursor()
-				cursor.execute("SELECT * FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(word.content, message.chat_id))
+				cursor.execute("SELECT * FROM bad_words WHERE word = '{}' AND chat_id = '{}'".format(word.content, message.chat_id))
 				if not cursor.fetchone():
 					return await load_msg.edit("❌ *کلمه {} از قبل در دیتابیس وجود نداشته است*".format(word.content))
 
-				cursor.execute("DELETE FROM auto_answer WHERE word = '{}' AND chat_id = '{}'".format(word.content, message.chat_id))
+				cursor.execute("DELETE FROM bad_words WHERE word = '{}' AND chat_id = '{}'".format(word.content, message.chat_id))
 				connection.commit()
 
 			await load_msg.edit("😉 *محدودیت مورد نظر با موفقیت حذف شد*")
