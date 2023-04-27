@@ -122,3 +122,5 @@ if __name__ == "__main__":
 
         Thread(target=lambda: asyncio.run(check_bot_work())).start()
         bot.run(1)
+
+    main()
