@@ -2,6 +2,7 @@ from .components import Components
 from .config import ConfigParser
 from .ratelimit import UserRateLimit
 from farsi_tools import standardize_persian_text as make_persian
+from .updater import GroupBanUpdater
 
 persianNumbers = (
 	('۱', '1'),
@@ -24,4 +25,4 @@ messages = {
 	"internal_error": "❌ *متاستفیم؛ به دلیل حجم بالای درخواست ها کار در این لحظه متوقف شد، لطفا کمی بعد دوباره تلاش کنید*"
 }
 
-__all__ = ("persianNumbers", "Components", "ConfigParser", "make_persian", "UserRateLimit")
+__all__ = ("persianNumbers", "Components", "ConfigParser", "make_persian", "UserRateLimit", "GroupBanUpdater", "messages")

@@ -6,7 +6,7 @@ import asyncio
 import bale
 from bale import Message, Update
 from threading import Thread
-from utils import persianNumbers, Components, ConfigParser, make_persian, messages
+from utils import persianNumbers, Components, ConfigParser, make_persian, messages, GroupBanUpdater
 from cogs import Admin, Help, Filter, Commands
 from database import DB
 from datetime import datetime, timedelta
@@ -24,7 +24,7 @@ with open("./config.json", "r", encoding="utf8") as _file:
 
 class GroupBan(bale.Bot):
     def __init__(self):
-        super().__init__(config.TOKEN)
+        super().__init__(config.TOKEN, updater=GroupBanUpdater)
         self.config = config
         self.components = Components()
         self.setup_events()
@@ -53,6 +53,12 @@ class GroupBan(bale.Bot):
     async def get_updates(self, offset: int = None, limit: int = None) -> list["Update"]:
         self.last_request = datetime.now()
         return await super().get_updates(offset, limit)
+
+    async def close(self):
+        """Close http Events and bot"""
+        await self.updater.stop()
+        await self.http.close()
+        self._closed = True
 
     async def send_message(self, chat_id, text, *, components=None, reply_to_message_id: Optional[str | int] = None) -> "Message":
         """This service is used to send text messages.
@@ -100,19 +106,19 @@ class GroupBan(bale.Bot):
                 await self.delete_message(chat_id, message_id)
                 return await self.send_message(chat_id, text)
 
-bot = GroupBan()
-async def check_bot_work():
-    while 1:
-        if isinstance(bot.loop, asyncio.AbstractEventLoop):
-            break
-    while not bot.is_closed():
-        if bot.last_request:
-            if bot.last_request + timedelta(seconds=20) <= datetime.now():
-                bot._closed = True
-                os.system("clear")
-                os.system(bot.config.SHELL_CODE)
-                os.system("screen python3 bot.py")
-                sys.exit()
+if __name__ == "__main__":
+    def main():
+        bot = GroupBan()
+        async def check_bot_work():
+            while 1:
+                if isinstance(bot.loop, asyncio.AbstractEventLoop):
+                    break
+            while not bot.is_closed():
+                if bot.last_request:
+                    if bot.last_request + timedelta(seconds=20) <= datetime.now() and not bool(bot.http.rate_limit):
+                        print(bot.updater)
+                        await bot.close()
+                        main()
 
-Thread(target=lambda: asyncio.run(check_bot_work())).start()
-bot.run(1)
+        Thread(target=lambda: asyncio.run(check_bot_work())).start()
+        bot.run(1)
