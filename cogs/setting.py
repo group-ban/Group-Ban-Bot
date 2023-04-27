@@ -26,7 +26,7 @@ def render_chat_info(connection: "DB", chat: bale.Chat, more_text = ""):
 	) + more_text
 
 
-class Admin:
+class Setting:
 	def __init__(self, bot: "GroupBan"):
 		self.bot = bot
 

@@ -5,12 +5,12 @@ import bale
 from bale import Message, Update
 from threading import Thread
 from utils import persianNumbers, Components, ConfigParser, make_persian, messages, GroupBanUpdater
-from cogs import Admin, Help, Filter, Commands, Support
+from cogs import Setting, Help, Filter, Commands, Support
 from database import DB
 from datetime import datetime, timedelta
 
 components = (
-    Admin,
+    Setting,
     Help,
     Filter,
     Commands,
