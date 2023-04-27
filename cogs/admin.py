@@ -56,7 +56,7 @@ class Admin:
 			return await check_message.edit(self.bot.base_messages["miss_permission"])
 		else:
 			if member.status.is_member():
-				return await check_message.edit("❌ *شما ادمین چت نیستید*")
+				return await check_message.edit("❌ *شما ادمین چت نیستید*\n✨ با *اضافه کردن* من به گروهت از این امکان استفاده کن!", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("دعوت گروه بان به چت", url="https://groupban.ir/invite")]))
 
 		return await self.commands.get(message.content)(message, check_message)
 
