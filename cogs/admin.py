@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Callable
 import bale
 import asyncio
 if TYPE_CHECKING:
@@ -31,8 +31,11 @@ class Admin:
 		self.bot = bot
 
 	@property
-	def commands(self):
-		return {"/setup": self.group_setup, "/auto_answer": self.auto_answer, "/auto-answer": self.auto_answer, "/aa": self.auto_answer, "/aa add": self.auto_answer_add, "/aa remove": self.auto_answer_remove, "/anti_word": self.anti_word, "/anti-word": self.anti_word, "/aw": self.anti_word, "/aw add": self.anti_word_add, "/aw remove": self.anti_word_remove}
+	def commands(self) -> Dict[str, Callable]:
+		return {"/setup": self.group_setup, "/auto_answer": self.auto_answer, "/auto-answer": self.auto_answer,
+			"/aa": self.auto_answer, "/aa toggle": self.auto_answer_toggle, "/aa add": self.auto_answer_add, "/aa remove": self.auto_answer_remove,
+			"/anti_word": self.anti_word, "/anti-word": self.anti_word, "/aw": self.anti_word, "/aw toggle": self.anti_word_toggle, "/aw add": self.anti_word_add,
+			"/aw remove": self.anti_word_remove}
 
 	def setup(self):
 		return {
@@ -101,11 +104,27 @@ class Admin:
 		return await render_message.reply("💠 *تغییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) در گروه خود استفاده نمائید")
 
 	async def auto_answer(self, message: bale.Message, check_message: bale.Message):
+		render_bool = lambda state: "فعال" if state else "غیر فعال"
 		with self.bot.make_db() as connection:
 			cursor = connection.cursor()
 			cursor.execute("SELECT word, answer FROM auto_answer WHERE chat_id = '{}'".format(message.chat.chat_id))
 			result = cursor.fetchall()
-		return await check_message.edit("🤖 *پاسخگویی خودکار*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که _کاربران عادی_ با فرستادن آن ها پاسخ های مشخصی را دریافت می نماید.\n```[لیست پاسخگو های فعال]{}```\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن پاسخگو\n[/aa add](send:/aa add)\n➖ دستور پاک کردن پاسخگو\n[/aa remove](send:/aa remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format("\n".join([f"💬 {word}\n⬅ {answer}" for word, answer in result]) if bool(result) else "❌ *در حال حاضر پاسخگویی در این چت فعال نیست*"))
+			cursor.execute(f"SELECT auto_answer FROM chat WHERE chat_id = '{message.chat_id}'")
+			(auto_answer_state,) = cursor.fetchone()
+		return await check_message.edit("🤖 *پاسخگویی خودکار*\n{1} وضعیت: *{0}* -  🔐 [{2} سازی](send:/aa toggle)\n\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که _کاربران عادی_ با فرستادن آن ها پاسخ های مشخصی را دریافت می نماید.\n```[لیست پاسخگو های فعال]{3}```\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن پاسخگو\n[/aa add](send:/aa add)\n➖ دستور پاک کردن پاسخگو\n[/aa remove](send:/aa remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format(render_bool(auto_answer_state), "🟢" if auto_answer_state else "🔴", render_bool(not auto_answer_state), "\n".join([f"💬 {word}\n⬅ {answer}" for word, answer in result]) if bool(result) else "❌ *در حال حاضر پاسخگویی در این چت فعال نیست*"))
+
+	async def auto_answer_toggle(self, message: bale.Message, check_message: bale.Message):
+		with self.bot.make_db() as connection:
+			cursor = connection.cursor()
+			cursor.execute("UPDATE chat SET {0} = !{0} WHERE chat_id = '{1}'".format(
+				"auto_answer",
+				int(message.chat.chat_id)
+			))
+			cursor.execute(f"SELECT auto_answer FROM chat WHERE chat_id = '{message.chat_id}'")
+			(auto_answer_state, ) = cursor.fetchone()
+			connection.commit()
+
+		return await check_message.edit("✅ *وضعیت بخش پاسحگویی خودکار با موفقیت به {} تغییر کرد.*".format("فعال" if auto_answer_state else "غیر فعال"))
 
 	async def auto_answer_add(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
@@ -172,11 +191,27 @@ class Admin:
 			await check_message.edit("😉 *پاسخگوی مورد نظر با موفقیت حذف شد*")
 
 	async def anti_word(self, message: bale.Message, check_message: bale.Message):
+		render_bool = lambda state: "فعال" if state else "غیر فعال"
 		with self.bot.make_db() as connection:
 			cursor = connection.cursor()
 			cursor.execute("SELECT word FROM bad_words WHERE chat_id = '{}'".format(message.chat.chat_id))
 			result = cursor.fetchall()
-		return await check_message.edit("🤖 *ضد کلمه*\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که در هنگام ارسال این کلمات توسط _کاربران عادی_ پیام ارسال شده از طرف وی پاک خواهد شد.\n\n```[لیست کلمه های محدود شده]{}```\n\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن کلمه بد\n[/aw add](send:/aw add)\n➖ دستور پاک کردن کلمه بد\n[/aw remove](send:/aw remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format("\n".join([f"⭕ {word}" for (word, ) in result]) if bool(result) else "❌ *در حاضر کلمه ای در چت محدود نشده است*"))
+			cursor.execute(f"SELECT anti_word FROM chat WHERE chat_id = '{message.chat_id}'")
+			(anti_word_state,) = cursor.fetchone()
+		return await check_message.edit("🤖 *ضد کلمه*\n{1} وضعیت: *{0}* -  🔐 [{2} سازی](send:/aa toggle)\n\nدر این بخش شما امکان اضافه کردن کلمه یا مجموعه ای از کلمات را دارید، که در هنگام ارسال این کلمات توسط _کاربران عادی_ پیام ارسال شده از طرف وی پاک خواهد شد.\n\n```[لیست کلمه های محدود شده]{3}```\n\n🔧 *دستورات بخش*\n\n➕ دستور اضافه کردن کلمه بد\n[/aw add](send:/aw add)\n➖ دستور پاک کردن کلمه بد\n[/aw remove](send:/aw remove)\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format(render_bool(anti_word_state), "🟢" if anti_word_state else "🔴", render_bool(not anti_word_state), "\n".join([f"⭕ {word}" for (word, ) in result]) if bool(result) else "❌ *در حاضر کلمه ای در چت محدود نشده است*"))
+
+	async def anti_word_toggle(self, message: bale.Message, check_message: bale.Message):
+		with self.bot.make_db() as connection:
+			cursor = connection.cursor()
+			cursor.execute("UPDATE chat SET {0} = !{0} WHERE chat_id = '{1}'".format(
+				"anti_word",
+				int(message.chat.chat_id)
+			))
+			cursor.execute(f"SELECT anti_word FROM chat WHERE chat_id = '{message.chat_id}'")
+			(anti_word_state, ) = cursor.fetchone()
+			connection.commit()
+
+		return await check_message.edit("✅ *وضعیت بخش پاسحگویی خودکار با موفقیت به {} تغییر کرد.*".format("فعال" if anti_word_state else "غیر فعال"))
 
 	async def anti_word_add(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
