@@ -1,13 +1,11 @@
 from __future__ import annotations
-import os
-import sys
 from typing import Optional
 import asyncio
 import bale
 from bale import Message, Update
 from threading import Thread
 from utils import persianNumbers, Components, ConfigParser, make_persian, messages, GroupBanUpdater
-from cogs import Admin, Help, Filter, Commands
+from cogs import Admin, Help, Filter, Commands, Support
 from database import DB
 from datetime import datetime, timedelta
 
@@ -15,7 +13,8 @@ components = (
     Admin,
     Help,
     Filter,
-    Commands
+    Commands,
+    Support
 )
 
 with open("./config.json", "r", encoding="utf8") as _file:
