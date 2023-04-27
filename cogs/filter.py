@@ -26,7 +26,7 @@ class Filter:
         return ratelimit.user_is_rate_limited(message)
 
     async def when_send_message_in_group(self, message: bale.Message):
-        if not message.author:
+        if not message.author or message.message_id == 0:
             return
         if not message.chat.type.is_group_chat():
             return self.bot.dispatch("verified_message", message)
