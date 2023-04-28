@@ -13,9 +13,15 @@ class GroupBanUpdater(Updater):
                     await self.call_to_dispatch(update)
 
                 if bool(updates):
-                    if not self._last_offset or ( updates[-1].update_id - self._last_offset <= 4 ):
+                    if not self._last_offset or ( updates[-1].update_id - self._last_offset <= 50 ):
                         self._last_offset = updates[-1].update_id
                 if self.interval:
                     await asyncio.sleep(self.interval)
             except Exception as exc:
                 await self.bot.on_error("getUpdates", exc)
+
+    def stop(self):
+        if not self._is_running:
+            raise RuntimeError("Updater is not running")
+
+        self._is_running = False
