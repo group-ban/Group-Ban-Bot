@@ -39,6 +39,7 @@ class GroupBan(bale.Bot):
 
     def setup_events(self):
         self.add_event(bale.EventType.READY, self.on_ready)
+        self.add_event(bale.EventType.UPDATE, self.on_update)
 
         for core in components:
             obj = core(self)
@@ -49,15 +50,12 @@ class GroupBan(bale.Bot):
     async def on_ready(self):
         print("Login as", self.user.username)
 
+    async def on_update(self, update: bale.Update):
+        print(update)
+
     async def get_updates(self, offset: int = None, limit: int = None) -> list["Update"]:
         self.last_request = datetime.now()
         return await super().get_updates(offset, limit)
-
-    async def close(self):
-        """Close http Events and bot"""
-        await self.updater.stop()
-        await self.http.close()
-        self._closed = True
 
     async def send_message(self, chat_id, text, *, components=None, reply_to_message_id: Optional[str | int] = None) -> "Message":
         """This service is used to send text messages.
@@ -106,20 +104,5 @@ class GroupBan(bale.Bot):
                 return await self.send_message(chat_id, text)
 
 if __name__ == "__main__":
-    def main():
-        bot = GroupBan()
-        async def check_bot_work():
-            while 1:
-                if isinstance(bot.loop, asyncio.AbstractEventLoop):
-                    break
-            while not bot.is_closed():
-                if bot.last_request:
-                    if bot.last_request + timedelta(seconds=20) <= datetime.now() and not bool(bot.http.rate_limit):
-                        print(bot.updater)
-                        await bot.close()
-                        main()
-
-        Thread(target=lambda: asyncio.run(check_bot_work())).start()
-        bot.run(1)
-
-    main()
+    bot = GroupBan()
+    bot.run(1)
