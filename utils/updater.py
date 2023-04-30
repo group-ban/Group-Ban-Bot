@@ -17,11 +17,11 @@ class GroupBanUpdater(Updater):
                         await self.call_to_dispatch(update)
                     if self._last_offset:
                         if len(updates) >= 2:
-                            self._last_offset = updates[-2 if updates[-1].update_id - updates[-2].update_id <= 20 else -1].update_id
+                            self._last_offset = updates[-2 if updates[-1].update_id - updates[-2].update_id <= 20 else -1].update_id + 1
                         else:
-                            self._last_offset = updates[-1].update_id if updates[-1].update_id - updates[-2].update_id <= 20 else None
+                            self._last_offset = updates[-1].update_id if updates[-1].update_id - self._last_offset <= 20 else None
                     else:
-                        self._last_offset = updates[-1].update_id
+                        self._last_offset = updates[-1].update_id + 1
 
                 if self.interval:
                     await asyncio.sleep(self.interval)
