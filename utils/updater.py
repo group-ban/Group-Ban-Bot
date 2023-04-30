@@ -15,7 +15,12 @@ class GroupBanUpdater(Updater):
                 if updates:
                     for update in updates:
                         await self.call_to_dispatch(update)
-                    if not self._last_offset or ( updates[-1].update_id - self._last_offset <= 50 ):
+                    if self._last_offset:
+                        if len(updates) >= 2:
+                            self._last_offset = updates[-2 if updates[-1].update_id - updates[-2].update_id <= 20 else -1].update_id
+                        else:
+                            self._last_offset = updates[-1].update_id if updates[-1].update_id - updates[-2].update_id <= 20 else None
+                    else:
                         self._last_offset = updates[-1].update_id
 
                 if self.interval:
