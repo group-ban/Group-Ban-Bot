@@ -176,7 +176,7 @@ class Setting:
 				if not result:
 					return
 				(text,) = result
-
+			text += "\n\n✨ قدرت گرفته از [گروه بان](https://groupban.ir) ؛ ربات مدیریت گروه"
 			return await message.chat.send(render_welcome_text(text, chat, user))
 
 	async def auto_answer(self, message: bale.Message, check_message: bale.Message):
