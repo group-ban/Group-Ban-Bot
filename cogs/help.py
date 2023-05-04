@@ -63,7 +63,6 @@ class Help:
 
 	async def when_user_join_me(self, message: bale.Message, chat: bale.Chat, user: bale.User):
 		if chat.type.is_group_chat() and user.user_id == self.bot.user.user_id:
-			inviter: bale.User = message.from_user
 			with self.bot.make_db() as connection:
 				cursor = connection.cursor()
 				cursor.execute("INSERT INTO chat(chat_id) VALUES (%s)", (int(chat.chat_id), ))

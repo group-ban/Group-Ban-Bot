@@ -1,13 +1,11 @@
 from __future__ import annotations
 from typing import Optional
-import asyncio
 import bale
 from bale import Message, Update
-from threading import Thread
 from utils import persianNumbers, Components, ConfigParser, make_persian, messages, GroupBanUpdater
 from cogs import Setting, Help, Filter, Commands, Support
 from database import DB
-from datetime import datetime, timedelta
+from datetime import datetime
 
 components = (
     Setting,
