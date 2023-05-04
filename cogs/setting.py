@@ -5,6 +5,12 @@ if TYPE_CHECKING:
 	from ..bot import GroupBan, DB
 
 
+def render_welcome_text(text: str, chat: bale.Chat, user: bale.User):
+	data = [("%تگ اینوایتر%", user.mention), ("%اینوایتر%", user.first_name), ("%گروه%", chat.title)]
+	for k, v in data:
+		text = text.replace(k, v)
+	return text
+
 def render_chat_info(connection: "DB", chat: bale.Chat, more_text = ""):
 	render_bool = lambda state: "فعال" if state else "غیر فعال"
 	cursor = connection.cursor()
@@ -35,11 +41,12 @@ class Setting:
 		return {"/setup": self.group_setup, "/auto_answer": self.auto_answer, "/auto-answer": self.auto_answer,
 			"/aa": self.auto_answer, "/aa toggle": self.auto_answer_toggle, "/aa add": self.auto_answer_add, "/aa remove": self.auto_answer_remove,
 			"/anti_word": self.anti_word, "/anti-word": self.anti_word, "/aw": self.anti_word, "/aw toggle": self.anti_word_toggle, "/aw add": self.anti_word_add,
-			"/aw remove": self.anti_word_remove}
+			"/aw remove": self.anti_word_remove, "/w": self.welcome, "/w toggle": self.welcome_toggle, "/w text": self.welcome_text}
 
 	def setup(self):
 		return {
-			self.when_admin_send_message: "verified_message"
+			self.when_admin_send_message: "verified_message",
+			self.welcome_action: "member_chat_join"
 		}
 
 	async def when_admin_send_message(self, message: bale.Message):
@@ -58,6 +65,8 @@ class Setting:
 			if member.status.is_member():
 				return await check_message.edit("❌ *شما ادمین چت نیستید*\n✨ با * (https://groupban.ir/invite)[اضافه کردن] * من به گروهت از این امکان استفاده کن!")
 
+		if message.content.startswith("/w"):
+			await self.check_welcome_table(message)
 		return await self.commands.get(message.content)(message, check_message)
 
 
@@ -102,6 +111,71 @@ class Setting:
 		await render_message.edit(render_chat_info(connection, message.chat))
 		connection.close()
 		return await render_message.reply("💠 *تغییرات با موفقیت اعمال شد*\nبرای ستاپ دوباره، میتوانید از دستور [/setup](send:/setup) در گروه خود استفاده نمائید")
+
+	async def check_welcome_table(self, message: bale.Message):
+		with self.bot.make_db() as connection:
+			cursor = connection.cursor()
+			cursor.execute("SELECT * FROM welcome WHERE chat_id = '{}'".format(message.chat_id))
+			result = cursor.fetchone()
+			if not result:
+				cursor.execute("INSERT INTO welcome(chat_id, state) VALUES (%s, %s)", (message.chat_id, False))
+				connection.commit()
+			cursor.close()
+
+	async def welcome(self, message: bale.Message, check_message: bale.Message):
+		render_bool = lambda _state: "فعال" if _state else "غیر فعال"
+		with self.bot.make_db() as connection:
+			cursor = connection.cursor()
+			cursor.execute("SELECT state, text FROM welcome WHERE chat_id = '{}'".format(message.chat.chat_id))
+			(state, text) = cursor.fetchone()
+		return await check_message.edit("🤖 *خوش آمد گو*\n{1} وضعیت: *{0}* -  🔐 [{2} سازی](send:/w toggle)\n\nدر این بخش شما امکان تنظیم یک خوش آمد گو با متن شخصی سازی شده را دارید. شما میتوانید با توجه به نیاز های خود متن را به نحو مورد نظر گروه تان بنویسید.\n```[متن فعلی خوش آمد گو]{3}\n\n💡 *مثال*:\n{4}```🔧 *دستورات بخش*\n\n🛠 دستور تنظیم کردن متن خوش آمد گو\n[/w text](send:/w text)\n⚠ به دلیل *وقت کم در هنگام وارد کردن دستور تا ارسال متن خوش آمدگویی* ، توصیه میشود متن خود را قبل از اجرای دستور آماده نمائید.\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format(render_bool(state), "🟢" if state else "🔴", render_bool(not state), text, render_welcome_text(text, message.chat, message.author)))
+
+	async def welcome_toggle(self, message: bale.Message, check_message: bale.Message):
+		with self.bot.make_db() as connection:
+			cursor = connection.cursor()
+			cursor.execute("UPDATE welcome SET {0} = !{0} WHERE chat_id = '{1}'".format(
+				"state",
+				int(message.chat.chat_id)
+			))
+			cursor.execute(f"SELECT state FROM welcome WHERE chat_id = '{message.chat_id}'")
+			(state,) = cursor.fetchone()
+			connection.commit()
+
+		return await check_message.edit("✅ *وضعیت بخش خوش آمد گو با موفقیت به {} تغییر کرد.*".format(
+			"فعال" if state else "غیر فعال"))
+
+	async def welcome_text(self, message: bale.Message, check_message: bale.Message):
+		await check_message.edit(
+			"🔷 *تغییر متن خوش آمد گو*\nلطفا *متنی* که میخواهید به هنگام ورود کاربر جدید به چت ارسال شود را وارد کنید\n💡 کلمه شما میبایست حداقل *2* کاراکتر و حداکثر *500* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
+		try:
+			msg: bale.Message = await self.bot.wait_for("verified_message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
+		except asyncio.TimeoutError:
+			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
+		else:
+			if msg.content in ["/cancel", "کنسل"]:
+				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
+			if not (500 >= len(msg.content) >= 2):
+				return await message.chat.send("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
+
+			load_msg = await message.chat.send(self.bot.base_messages["wait"])
+			with self.bot.make_db() as connection:
+				cursor = connection.cursor()
+				cursor.execute("UPDATE welcome SET text = %s WHERE chat_id = %s", (msg.content, message.chat_id))
+				connection.commit()
+
+			await load_msg.edit("😉 *متن خوش آمد گو گروه، با موفقیت تغییر کرد*")
+
+	async def welcome_action(self, message: bale.Message, chat: bale.Chat, user: bale.User):
+		if chat.type.is_group_chat() and user.user_id != self.bot.user.user_id:
+			with self.bot.make_db() as connection:
+				cursor = connection.cursor()
+				cursor.execute("SELECT text FROM welcome WHERE chat_id = '{}' AND state = TRUE".format(chat.chat_id))
+				result = cursor.fetchone()
+				if not result:
+					return
+				(text,) = result
+
+			return await message.chat.send(render_welcome_text(text, chat, user))
 
 	async def auto_answer(self, message: bale.Message, check_message: bale.Message):
 		render_bool = lambda state: "فعال" if state else "غیر فعال"
