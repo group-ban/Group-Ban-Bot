@@ -6,9 +6,9 @@ if TYPE_CHECKING:
 
 
 def render_welcome_text(text: str, chat: bale.Chat, user: bale.User):
-	data = [("%تگ اینوایتر%", user.mention), ("%اینوایتر%", user.first_name), ("%گروه%", chat.title)]
-	for k, v in data:
-		text = text.replace(k, v)
+	data = [((".تگ.", ".tag."), user.mention), ((".کاربر.", ".user."), user.first_name), ((".گروه.", ".group."), chat.title)]
+	for (k, k_p), v in data:
+		text = text.replace(k, v).replace(k_p, v)
 	return text
 
 def render_chat_info(connection: "DB", chat: bale.Chat, more_text = ""):
@@ -63,7 +63,7 @@ class Setting:
 			return await check_message.edit(self.bot.base_messages["miss_permission"])
 		else:
 			if member.status.is_member():
-				return await check_message.edit("❌ *شما ادمین چت نیستید*\n✨ با * (https://groupban.ir/invite)[اضافه کردن] * من به گروهت از این امکان استفاده کن!")
+				return await check_message.edit("❌ *شما ادمین چت نیستید*\n✨ با * [اضافه کردن](https://groupban.ir/invite) * من به گروهت از این امکان استفاده کن!")
 
 		if message.content.startswith("/w"):
 			await self.check_welcome_table(message)
@@ -128,7 +128,9 @@ class Setting:
 			cursor = connection.cursor()
 			cursor.execute("SELECT state, text FROM welcome WHERE chat_id = '{}'".format(message.chat.chat_id))
 			(state, text) = cursor.fetchone()
-		return await check_message.edit("🤖 *خوش آمد گو*\n{1} وضعیت: *{0}* -  🔐 [{2} سازی](send:/w toggle)\n\nدر این بخش شما امکان تنظیم یک خوش آمد گو با متن شخصی سازی شده را دارید. شما میتوانید با توجه به نیاز های خود متن را به نحو مورد نظر گروه تان بنویسید.\n```[متن فعلی خوش آمد گو]{3}\n\n💡 *مثال*:\n{4}```🔧 *دستورات بخش*\n\n🛠 دستور تنظیم کردن متن خوش آمد گو\n[/w text](send:/w text)\n⚠ به دلیل *وقت کم در هنگام وارد کردن دستور تا ارسال متن خوش آمدگویی* ، توصیه میشود متن خود را قبل از اجرای دستور آماده نمائید.\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format(render_bool(state), "🟢" if state else "🔴", render_bool(not state), text, render_welcome_text(text, message.chat, message.author)))
+		if not bool(text):
+			text = "❌ *متنی برای بخش خوش آمد گو تنظیم نشده است*"
+		return await check_message.edit("🤖 *خوش آمد گو*\n{1} وضعیت: *{0}* -  🔐 [{2} سازی](send:/w toggle)\n\nدر این بخش شما امکان تنظیم یک خوش آمد گو با متن شخصی سازی شده را دارید. شما میتوانید با توجه به نیاز های خود متن را به نحو مورد نظر گروه تان بنویسید.\n```[متن فعلی خوش آمد گو]{3}\n\n💡 *مثال*:\n{4}```\n```[متغیر ها]*متغیر ها:*\n\n💡 *.تگ.* یا *.tag.* : تگ کردن کاربر (مانند @support_groupban)\n💡 *.کاربر.* یا *.user.* : نام کاربر (مانند پشتیبانی ربات گروه بان)\n💡 *.گروه.* یا *.group.* : نام گروه\n\nبا استفاده هر یک از متغیر های بالا، آن متغیر به موارد گفته شده جای گذاری می شود.```\n🔧 *دستورات بخش*\n\n🛠 دستور تنظیم کردن متن خوش آمد گو\n[/w text](send:/w text)\n⚠ به دلیل *وقت کم در هنگام وارد کردن دستور تا ارسال متن خوش آمدگویی* ، توصیه میشود متن خود را قبل از اجرای دستور آماده نمائید.\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format(render_bool(state), "🟢" if state else "🔴", render_bool(not state), text, render_welcome_text(text, message.chat, message.author)))
 
 	async def welcome_toggle(self, message: bale.Message, check_message: bale.Message):
 		with self.bot.make_db() as connection:
@@ -146,11 +148,11 @@ class Setting:
 
 	async def welcome_text(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
-			"🔷 *تغییر متن خوش آمد گو*\nلطفا *متنی* که میخواهید به هنگام ورود کاربر جدید به چت ارسال شود را وارد کنید\n💡 کلمه شما میبایست حداقل *2* کاراکتر و حداکثر *500* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
+			"🔷 *تغییر متن خوش آمد گو*\nلطفا *متنی* که میخواهید به هنگام ورود کاربر جدید به چت ارسال شود را وارد کنید\n```[متغیر ها]*متغیر ها:*\n\n💡 *.تگ.* یا *.tag.* : تگ کردن کاربر (مانند @support_groupban)\n💡 *.کاربر.* یا *.user.* : نام کاربر (مانند پشتیبانی ربات گروه بان)\n💡 *.گروه.* یا *.group.* : نام گروه\n\nبا استفاده هر یک از متغیر های بالا، آن متغیر به موارد گفته شده جای گذاری می شود.```\n💡 کلمه شما میبایست حداقل *2* کاراکتر و حداکثر *500* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
 		try:
 			msg: bale.Message = await self.bot.wait_for("verified_message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
 		except asyncio.TimeoutError:
-			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
+			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands"), ]))
 		else:
 			if msg.content in ["/cancel", "کنسل"]:
 				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
@@ -206,7 +208,7 @@ class Setting:
 		try:
 			se_1: bale.Message = await self.bot.wait_for("verified_message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
 		except asyncio.TimeoutError:
-			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
+			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands"), ]))
 		else:
 			await se_1.delete()
 			if se_1.content in ["/cancel", "کنسل"]:
@@ -220,7 +222,7 @@ class Setting:
 					m: m.chat == message.chat and m.author == message.author, timeout=30.0)
 			except asyncio.TimeoutError:
 				return await message.chat.send(
-					"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
+					"*عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands"), ]))
 			else:
 				await se_2.delete()
 				if se_2.content in ["/cancel", "کنسل"]:
@@ -293,7 +295,7 @@ class Setting:
 		try:
 			word: bale.Message = await self.bot.wait_for("verified_message", check = lambda m: m.chat == message.chat and m.author == message.author, timeout = 30.0)
 		except asyncio.TimeoutError:
-			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands")))
+			return await message.chat.send("❌ *عملیات لغو شد؛ شما موارد خواسته شده را به موقع ارسال نکردید*", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("دریافت راهنمای دستورات", url="https://groupban.ir/commands"), ]))
 		else:
 			if word.content in ["/cancel", "کنسل"]:
 				return await message.chat.send("❌ *عملیات توسط شما لغو شد*")
