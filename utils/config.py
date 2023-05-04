@@ -12,7 +12,3 @@ class ConfigParser:
 	@property
 	def DATABASE(self):
 		return self._raw.get("DATABASE")
-
-	@property
-	def SHELL_CODE(self):
-		return self._raw.get("VENV_SHELL_CODE")
