@@ -3,7 +3,7 @@ from bale import InlineKeyboard
 
 class Components:
     def help_command(self):
-        return C(inline_keyboards=[[InlineKeyboard("دعوت ربات به گروه", url="https://groupban.ir/invite"), InlineKeyboard("داکیومنت ربات", url="https://groupban.ir/commands")], [InlineKeyboard("خرید پریمیوم ربات", url="https://groupban.ir/premium"), InlineKeyboard("سفارش تبلیغ", url="https://groupban.ir/tabligh")]])
+        return C(inline_keyboards=[[InlineKeyboard("دعوت ربات به گروه", url="https://groupban.ir/invite"), InlineKeyboard("داکیومنت ربات", url="https://groupban.ir/commands")], [InlineKeyboard("سایت گروه بان", url="https://groupban.ir")]])
 
     def commands(self):
         return C(inline_keyboards=[[InlineKeyboard("داکیومنت دستورات ربات", url="https://groupban.ir/commands")]])
@@ -15,4 +15,4 @@ class Components:
         return C(inline_keyboards=[InlineKeyboard("اطلاع رسانی گروه بان", url="https://ble.ir/groupban"), [InlineKeyboard("سایت گروه بان", url="https://groupban.ir/"), InlineKeyboard("پشتیبانی ربات", url="https://groupban.ir/support")]])
 
     def about_command(self):
-        return C(inline_keyboards=[[InlineKeyboard("گیت هاب گروه بان", url="https://github.com/group-ban")], InlineKeyboard("گیت هاب کتابخانه بله بات (python-bale-bot)", url="https://github.com/python-bale-bot")])
+        return C(inline_keyboards=[[InlineKeyboard("گیت هاب گروه بان", url="https://groupban.ir/github")], InlineKeyboard("سایت پروژه بله در پایتون (python-bale-bot)", url="https://python-bale-bot.ir")])
