@@ -3,7 +3,7 @@ from typing import Optional
 import bale
 from bale import Message, Update
 from utils import persianNumbers, Components, ConfigParser, make_persian, messages, GroupBanUpdater
-from cogs import Setting, Help, Filter, Commands, Support
+from cogs import Setting, Help, Filter, Commands, Support, Developer
 from database import DB
 from datetime import datetime
 
@@ -12,7 +12,8 @@ components = (
     Help,
     Filter,
     Commands,
-    Support
+    Support,
+    Developer
 )
 
 with open("./config.json", "r", encoding="utf8") as _file:
@@ -29,6 +30,10 @@ class GroupBan(bale.Bot):
         self.make_persian = make_persian
 
     @property
+    def developers(self):
+        return config.DEVELOPER_IDS
+
+    @property
     def base_messages(self):
         return messages
 
@@ -37,6 +42,7 @@ class GroupBan(bale.Bot):
 
     def setup_events(self):
         self.add_event(bale.EventType.READY, self.on_ready)
+        self.add_event(bale.EventType.MESSAGE, self.when_developers_send_message)
         self.add_event(bale.EventType.UPDATE, self.on_update)
 
         for core in components:
@@ -50,6 +56,10 @@ class GroupBan(bale.Bot):
 
     async def on_update(self, update: bale.Update):
         print(update)
+
+    async def when_developers_send_message(self, message: bale.Message):
+        if message.author.chat_id in self.developers:
+            return self.dispatch("developer_message", message)
 
     async def get_updates(self, offset: int = None, limit: int = None) -> list["Update"]:
         self.last_request = datetime.now()
