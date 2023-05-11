@@ -9,19 +9,12 @@ class Developer:
     def __init__(self, bot: "GroupBan"):
         self.bot = bot
 
-    @property
-    def commands(self):
-        return ["/developer", "/d", "/d group list"]
-
     def setup(self):
         return {
             self.when_send_command: "developer_message"
         }
 
     async def when_send_command(self, message: bale.Message):
-        if not message.content in self.commands:
-            return
-
         if message.content == "/d info":
             return await message.chat.send("✨ هویت شما تائید شد؛ شما یکی از توسعه دهندگان گروه بان هستید")
 
