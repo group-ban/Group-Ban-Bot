@@ -130,7 +130,7 @@ class Setting:
 			(state, text) = cursor.fetchone()
 		if not bool(text):
 			text = "❌ *متنی برای بخش خوش آمد گو تنظیم نشده است*"
-		return await check_message.edit("🤖 *خوش آمد گو*\n{1} وضعیت: *{0}* -  🔐 [{2} سازی](send:/w toggle)\n\nدر این بخش شما امکان تنظیم یک خوش آمد گو با متن شخصی سازی شده را دارید. شما میتوانید با توجه به نیاز های خود متن را به نحو مورد نظر گروه تان بنویسید.\n```[متن فعلی خوش آمد گو]{3}\n\n💡 *مثال*:\n{4}```\n```[متغیر ها]*متغیر ها:*\n\n💡 *.تگ.* یا *.tag.* : تگ کردن کاربر (مانند @support_groupban)\n💡 *.کاربر.* یا *.user.* : نام کاربر (مانند پشتیبانی ربات گروه بان)\n💡 *.گروه.* یا *.group.* : نام گروه\n\nبا استفاده هر یک از متغیر های بالا، آن متغیر به موارد گفته شده جای گذاری می شود.```\n🔧 *دستورات بخش*\n\n🛠 دستور تنظیم کردن متن خوش آمد گو\n[/w text](send:/w text)\n⚠ به دلیل *وقت کم در هنگام وارد کردن دستور تا ارسال متن خوش آمدگویی* ، توصیه میشود متن خود را قبل از اجرای دستور آماده نمائید.\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format(render_bool(state), "🟢" if state else "🔴", render_bool(not state), text, render_welcome_text(text, message.chat, message.author)))
+		return await check_message.edit("🤖 *خوش آمد گو*\n{1} وضعیت: *{0}* -  🔐 [{2} سازی](send:/w toggle)\n\nدر این بخش شما امکان تنظیم یک خوش آمد گو با متن شخصی سازی شده را دارید. شما میتوانید با توجه به نیاز های خود متن را به نحو مورد نظر گروه تان بنویسید.\n```[متن فعلی خوش آمد گو]{3}\n\n💡 *مثال* :\n{4}```\n```[متغیر ها]*متغیر ها:*\n\n💡 *.تگ.* یا *.tag.* : تگ کردن کاربر (مانند @support_groupban)\n💡 *.کاربر.* یا *.user.* : نام کاربر (مانند پشتیبانی ربات گروه بان)\n💡 *.گروه.* یا *.group.* : نام گروه\n\nبا استفاده هر یک از متغیر های بالا، آن متغیر به موارد گفته شده جای گذاری می شود.```\n🔧 *دستورات بخش*\n\n🛠 دستور تنظیم کردن متن خوش آمد گو\n[/w text](send:/w text)\n⚠ به دلیل *وقت کم در هنگام وارد کردن دستور تا ارسال متن خوش آمدگویی* ، توصیه میشود متن خود را قبل از اجرای دستور آماده نمائید.\n\n💡 برای ارسال دستور، کافیست بر روی آن کلیک نمائید.".format(render_bool(state), "🟢" if state else "🔴", render_bool(not state), text, render_welcome_text(text, message.chat, message.author)))
 
 	async def welcome_toggle(self, message: bale.Message, check_message: bale.Message):
 		with self.bot.make_db() as connection:
@@ -176,7 +176,7 @@ class Setting:
 				if not result:
 					return
 				(text,) = result
-			text += "\n\n✨ قدرت گرفته از [گروه بان](https://groupban.ir) ؛ ربات مدیریت گروه"
+			text += "\n\n✨ قدرت گرفته از [گروه بان](https://groupban.ir) ؛ برترین ربات مدیریت گروه"
 			return await message.chat.send(render_welcome_text(text, chat, user))
 
 	async def auto_answer(self, message: bale.Message, check_message: bale.Message):
