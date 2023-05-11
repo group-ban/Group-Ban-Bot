@@ -58,7 +58,10 @@ class GroupBan(bale.Bot):
         print(update)
 
     async def when_developers_send_message(self, message: bale.Message):
-        if message.author.chat_id in self.developers:
+        if not message.author:
+            return
+
+        if int(message.author.chat_id) in self.developers:
             return self.dispatch("developer_message", message)
 
     async def get_updates(self, offset: int = None, limit: int = None) -> list["Update"]:
