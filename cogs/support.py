@@ -26,4 +26,4 @@ class Support:
             return await message.chat.send(self.bot.base_messages["only_group"])
 
         if message.content == "/helpme":
-            return await message.chat.send("💼 *ربات در حال بروزرسانی سیستمی است. این کار تنها در هنگام قرار گیری ربات بر روی نسخه استیبل امکان پذیر است*")
+            return await message.chat.send("📡 *درخواست پشتیبانی*\n\nکاربر گرامی، شما به راحتی میتوانید در بخش پشتیبانی سایت، به طور آنلاین با کارشناسان ما تماس حاصل کنید.", components=self.bot.components.site_and_support_buttons())
