@@ -54,7 +54,7 @@ class Filter:
         if anti_spam and user_spam_state:
             return await message.delete()
 
-        if (anti_link and re.search("(?P<url>https?://[^\s]+)", standard_content)) or (anti_mention and re.search("(?<=@)\w+", standard_content)):
+        if (anti_link and re.search("(?P<url>https?://\S+)", standard_content)) or (anti_mention and re.search("(?<=@)\w+", standard_content)):
             return await message.delete()
 
         if anti_forward and message.forward_from_message_id:
