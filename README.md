@@ -1,7 +1,7 @@
 # Group Ban Bot
 
 <div align='center'>
-<img width='300px' src='https://github.com/group-ban/group-ban.github.io/blob/master/dist/img/GB.png?raw=true'>
+<img width='300px' src='https://github.com/group-ban/group-ban.github.io/blob/master/dist/img/GB.png?raw=true' alt="Group Ban Logo">
 <br/>
 <b style='margin-bottom:20px;'>An Moderator bot for Bale written in Python.</b>
 
@@ -14,7 +14,7 @@
 
 ## Installation
 
-GroupBan can be hosted only on cPanel.
+**GroupBan can be hosted by every host.**
 
 ### cPanel hosting
 
