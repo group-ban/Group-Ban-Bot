@@ -12,3 +12,7 @@ class ConfigParser:
 	@property
 	def DATABASE(self):
 		return self._raw.get("DATABASE")
+
+	@property
+	def DEVELOPER_IDS(self):
+		return self._raw.get("DEVELOPERS")
