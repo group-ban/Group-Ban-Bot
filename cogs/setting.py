@@ -96,7 +96,7 @@ class Setting:
 					await action_message.delete()
 					break
 
-				if not action.data in ["anti_spam", "anti_link", "anti_mention", "anti_word", "anti_forward", "auto_answer"]:
+				if not action.data in ["anti_spam", "anti_link", "anti_mention", "anti_forward"]:
 					continue
 
 				cursor = connection.cursor()
