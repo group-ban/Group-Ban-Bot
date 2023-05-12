@@ -30,7 +30,7 @@ class Developer:
             return await message.chat.send("✨ هویت شما تائید شد؛ شما یکی از توسعه دهندگان گروه بان هستید")
 
         elif message.content in ["/developer", "/d"]:
-            return await message.chat.send("✨ *توسعه دهندگان*\n\n⛏ دریافت لیست چت های ثبت شده\n/d group list\n\n⛏ ارسال پیام به چت (الزاما ثبت شده)\n/d group fetch <chat id>\n\n⛏ دریافت گروه (ثبت شده یا نشده)\n/d group send <chat id>\n\n⛏ دریافت آیدی کاربر (با یکی از پیام های وی)\n/d user get\n\n⛏ خارج شدن از چت (ثبت شده یا نشده)\n/d group leave <chat id>\n\n⛏ بن کردن فرد در گروه خاص (الزاما گروه ثبت شده)\n/d group ban <chat id> <member id>\n\n🚀 گروه بان با شما توسعه دهندگان گرامی، *گـــروه بـــان* شده است.")
+            return await message.chat.send("✨ *توسعه دهندگان*\n\n⛏ دریافت لیست چت های ثبت شده\n/d group list\n\n⛏ ارسال پیام به چت (الزاما ثبت شده)\n/d group fetch <chat id>\n\n⛏ دریافت گروه (ثبت شده یا نشده)\n/d group send <chat id>\n\n⛏ دریافت آیدی کاربر (با یکی از پیام های وی)\n/d user get\n\n⛏ خارج شدن از چت (ثبت شده یا نشده)\n/d group leave <chat id>\n\n⛏ دریافت اطلاعات پیام\n/d message get\n\n⛏ پاک کردن پیام از چت\n/d message delete <chat id> <message id>\n\n⛏ بن کردن فرد در گروه خاص (الزاما گروه ثبت شده)\n/d group ban <chat id> <member id>\n\n🚀 گروه بان با شما توسعه دهندگان گرامی، *گـــروه بـــان* شده است.")
 
         elif message.content == "/d group list":
             with self.bot.make_db() as connection:
@@ -91,6 +91,28 @@ class Developer:
                 return await msg.reply(
                     "🚀 *پیام با موفقیت دریافت شد*\n\nپیام با آیدی {0} بر روی سرور های بله و توسط {1} با آیدی {2} قرار گرفته است.".format(
                         msg.message_id, msg.forward_from.first_name, msg.forward_from.user_id))
+
+        elif message.content == "/d message get":
+            await message.chat.send("💎 *لطفا تا 30 ثانیه دیگر پیام مورد نظر ارسال نمائید*")
+            try:
+                msg: "bale.Message" = await self.bot.wait_for("developer_message", check=lambda m: m.author == message.author and m.chat == message.chat and m.forward_from_message_id)
+            except asyncio.TimeoutError:
+                return await message.chat.send("💡 متاستفانه ارسال نکردید")
+            else:
+                return await msg.reply(
+                    "🚀 *پیام با موفقیت دریافت شد*\n\nپیام با آیدی {} بر روی سرور های بله قرار گرفته است.".format(msg.forward_from_message_id))
+
+        elif message.content.startswith("/d message delete "):
+            (chat_id, message_id) = message.content.split(" ")[3::]
+            if not chat_id.isdigit():
+                return await message.chat.send("❌ *چت آیدی وارد شده نامعتبر است*")
+
+            try:
+                await self.bot.delete_message(chat_id, message_id)
+            except bale.BaleError as err:
+                return await message.chat.send("❌ درخواست انجام نشد\n{}".format(err))
+            else:
+                return await message.chat.send("🟢 *با موفقیت پاک شد*")
 
         elif message.content.startswith("/d group ban "):
             (chat_id, user_id) = message.content.split(" ")[3::]
