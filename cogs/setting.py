@@ -14,21 +14,19 @@ def render_welcome_text(text: str, chat: bale.Chat, user: bale.User):
 def render_chat_info(connection: "DB", chat: bale.Chat, more_text = ""):
 	render_bool = lambda state: "فعال" if state else "غیر فعال"
 	cursor = connection.cursor()
-	cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_word, anti_forward, auto_answer FROM chat WHERE chat_id = '{}'".format(chat.chat_id))
+	cursor.execute("SELECT anti_spam, anti_link, anti_mention, anti_forward FROM chat WHERE chat_id = '{}'".format(chat.chat_id))
 	result = cursor.fetchone()
 	if not result:
 		return
-	(anti_spam, anti_link, anti_mention, anti_word, anti_forward, auto_answer) = result
+	(anti_spam, anti_link, anti_mention, anti_forward) = result
 
-	return "💠 *ستاپ کردن ربات در گروه {}*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 ضد اسپم: {}\n🔧 ضد لینک: {}\n🔧 ضد منشن: {}\n🔧 ضد کلمه: {}\n🔧 ضد بازارسال: {}\n🔧 وضعیت پاسخگویی خودکار: {}".format(
+	return "💠 *ستاپ کردن ربات در گروه {}*\nشناسه یکتا گروه: {}\n\n👥 *اطلاعات گروه*\n🔧 ضد اسپم: {}\n🔧 ضد لینک: {}\n🔧 ضد منشن: {}\n🔧 ضد بازارسال: {}".format(
 		chat.title,
 		chat.chat_id,
 		render_bool(anti_spam),
 		render_bool(anti_link),
 		render_bool(anti_mention),
-		render_bool(anti_word),
-		render_bool(anti_forward),
-		render_bool(auto_answer)
+		render_bool(anti_forward)
 	) + more_text
 
 
