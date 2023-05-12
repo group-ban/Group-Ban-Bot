@@ -25,6 +25,8 @@ class GroupBan(bale.Bot):
         super().__init__(config.TOKEN, updater=GroupBanUpdater)
         self.config = config
         self.components = Components()
+        self._start_time = datetime.now()
+        self.command_usage_count = 0
         self.setup_events()
         self.last_request = datetime.now()
         self.make_persian = make_persian
@@ -36,6 +38,10 @@ class GroupBan(bale.Bot):
     @property
     def base_messages(self):
         return messages
+
+    @property
+    def uptime(self):
+        return datetime.now() - self._start_time
 
     def make_db(self):
         return DB(config.DATABASE)

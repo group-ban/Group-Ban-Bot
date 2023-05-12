@@ -1,9 +1,13 @@
 from typing import TYPE_CHECKING
 import bale
+from datetime import timedelta
 
 if TYPE_CHECKING:
 	from ..bot import GroupBan
 
+def parse_time(_datetime: "timedelta"):
+	minutes = _datetime.seconds // 60
+	return ("تقریبا {} ساعت".format(_datetime.seconds // 3600) if _datetime.seconds // 3600 > 0 else "{} دقیقه".format(minutes)) if minutes != 0 else "{} ثانیه".format(_datetime.seconds)
 
 class Help:
 	def __init__(self, bot: "GroupBan"):
@@ -36,7 +40,10 @@ class Help:
 		}
 
 	async def when_message(self, message: bale.Message):
-		if message.content in ["/help", "/start"]:
+		if message.content.startswith("/"):
+			self.bot.command_usage_count += 1
+
+		if message.content.lower() in ["/help", "/start", self.bot.user.mention.lower()]:
 			if message.chat.type.is_group_chat():
 				return await message.reply("\n\n".join([
 					"🤖 *گروه بان؛ مدرن ترین ربات مدیریت گروه*",
@@ -48,6 +55,9 @@ class Help:
 
 		elif message.content == "/donate":
 			return await message.chat.send("❤ *دونیت به مجموعه گروه بان*\n\nشما میتوانید از طریق سرویس پرداخت امن آی دی پی (idpay) مبلغ مورد نظر خود را به مجموعه گروه بان اهدا نمائید.", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("اهدا به مجموعه گروه بان", url="https://idpay.ir/group-ban")]))
+
+		elif message.content == "/ping":
+			return await message.chat.send("🏓 *پونگ*\n\n*آپتایم* : {}\n*دستورات*  استفاده شده: {}\n\n✨ گروه بان؛ مدرن ترین ربات مدیریت گروه در بله".format(parse_time(self.bot.uptime), self.bot.command_usage_count))
 
 		elif message.content == "/about":
 			return await message.chat.send("〽 *درباره مجموعه گروه بان*\n\n👥 توسعه داده شده توسط *کیان احمدیان و امین شهرابی*\n\n👨‍💻 این بازو به وسیله زبان قدرتمند *پایتون* و کتابخانه *python-bale-bot* طراحی و برنامه نویسی شده است. همچنین این پروژه به صورت متن باز (Open Source) در گیت هاب مجموعه قرار دارد.\n\n🔆 بهار 1402", components=self.bot.components.about_command())
