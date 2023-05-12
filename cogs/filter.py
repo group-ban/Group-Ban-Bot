@@ -31,7 +31,7 @@ class Filter:
         except bale.BaleError:
             member = None
         else:
-            if member.status.is_member():
+            if not member.status.is_member():
                 member = None
 
         if member:
