@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from ..bot import GroupBan
 
 async def render_chat_info(chat: "bale.Chat"):
-    return "👥 *مشخصات اصلی گروه*\n\nℹ نام گروه: *{}*\n🆔 شناسه یکتای گروه: *{}*\n*گروه بان؛ دولوپر مود*".format(chat.title, chat.chat_id)
+    return "👥 *مشخصات اصلی گروه*\n\nℹ نام گروه: *{}*\n🆔 شناسه یکتای گروه: *{}*\n🔗 لینک دعوت گروه: *{}*\n*گروه بان؛ دولوپر مود*".format(chat.title, chat.chat_id, chat.invite_link)
 
 
 class Developer:
