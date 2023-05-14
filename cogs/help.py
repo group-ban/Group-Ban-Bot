@@ -26,7 +26,7 @@ class Help:
 
 	@property
 	def bot_news(self):
-		return "\n".join(["از صبوری شما به جهت حل مشکل ربات متشکریم ❤"])
+		return "\n".join(["*مشکل پاک نکردن لینک های پیام رسان بله برطرف شد*"])
 
 	def ads(self, chat: bale.Chat):
 		return "❌ تبلیغی برای نمایش وجود ندارد!"
@@ -40,7 +40,7 @@ class Help:
 		}
 
 	async def when_message(self, message: bale.Message):
-		if message.content.startswith("/"):
+		if message.content and message.content.startswith("/"):
 			self.bot.command_usage_count += 1
 
 		if message.content.lower() in ["/help", "/start", self.bot.user.mention.lower()]:
