@@ -20,7 +20,7 @@ class Developer:
         }
 
     async def when_send_command(self, message: bale.Message):
-        if message.forward_from_message_id:
+        if not message.content or message.forward_from_message_id:
             return
 
         for (persian_num, english_num) in persianNumbers:
