@@ -40,6 +40,9 @@ class Help:
 		}
 
 	async def when_message(self, message: bale.Message):
+		if not message.content:
+			return
+
 		if message.content and message.content.startswith("/"):
 			self.bot.command_usage_count += 1
 
