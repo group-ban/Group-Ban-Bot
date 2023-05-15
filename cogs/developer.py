@@ -37,7 +37,7 @@ class Developer:
                 cursor = connection.cursor()
                 cursor.execute("SELECT chat_id FROM chat LIMIT 200")
                 chats = cursor.fetchall()
-                return await message.chat.send("💎 *لیست چت ها*\n\n{}".format("\n".join([f"🔧 {chat_id}" for (chat_id, ) in chats])))
+                return await message.chat.send("💎 *لیست چت ها*\n\n{}".format("\n".join([f"🔧 {chat_id} | [ارسال پیام](send:/d group send {chat_id}) [دریافت اطلاعات](send:/d group fetch {chat_id}) [خارج شدن از چت](send:/d group leave {chat_id})" for (chat_id, ) in chats])))
 
         elif message.content.startswith("/d group fetch "):
             chat_id = "".join(message.content.split(" ")[3::])
@@ -100,7 +100,7 @@ class Developer:
                 return await message.chat.send("💡 متاستفانه ارسال نکردید")
             else:
                 return await msg.reply(
-                    "🚀 *پیام با موفقیت دریافت شد*\n\nپیام با آیدی {} بر روی سرور های بله قرار گرفته است.".format(msg.forward_from_message_id))
+                    "🚀 *پیام با موفقیت دریافت شد*\n\nپیام با آیدی {} و در چتی با آیدی {} بر روی سرور های بله قرار گرفته است.".format(msg.forward_from_message_id, msg.forward_from_chat.chat_id))
 
         elif message.content.startswith("/d message delete "):
             (chat_id, message_id) = message.content.split(" ")[3::]
