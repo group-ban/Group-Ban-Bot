@@ -172,7 +172,7 @@ class Setting:
 				cursor = connection.cursor()
 				cursor.execute("SELECT text FROM welcome WHERE chat_id = '{}' AND state = TRUE".format(chat.chat_id))
 				result = cursor.fetchone()
-				if not result:
+				if not result or not result[0]:
 					return
 				(text,) = result
 			text += "\n\n✨ قدرت گرفته از [گروه بان](https://groupban.ir) ؛ برترین ربات مدیریت گروه"
