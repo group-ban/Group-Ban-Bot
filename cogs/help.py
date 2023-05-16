@@ -28,8 +28,6 @@ class Help:
 	def bot_news(self):
 		return "\n".join(["*گروه بان به زودی اشتراکی میشود*\nاطلاعات بیشتر در [کانال اطلاع رسانی](https://ble.ir/groupban/5063234390369018/1684157208186)"])
 
-	def ads(self, chat: bale.Chat):
-		return "🚀 *پرشین فلو*\n💎 جامع ترین فروشگاه فایل ، افزونه ، قالب و سورس کد ایران ، با بهترین قیمت ها و پشتیبانی 24 ساعته\nhttps://persianflow.ir"
 
 	def setup(self):
 		return {
@@ -48,12 +46,13 @@ class Help:
 
 		if message.content.lower() in ["/help", "/start", self.bot.user.mention.lower()]:
 			if message.chat.type.is_group_chat():
-				return await message.reply("\n\n".join([
-					"🤖 *گروه بان؛ مدرن ترین ربات مدیریت گروه*",
-				   self.menu,
-				   "\n".join(["📺 * تبلیغات - 💎 [رزرو تبلیغات](https://ble.ir/support_groupban) *", self.ads(message.chat)]),
-				   "\n".join(["📰 *اخبار ربات*", self.bot_news]),
-				   "⚖ *نقض قوانین «گروه بان» بن به همراه دارد.*"]), components=self.bot.components.site_and_support_buttons())
+				with self.bot.make_db() as connection:
+					return await message.reply("\n\n".join([
+						"🤖 *گروه بان؛ مدرن ترین ربات مدیریت گروه*",
+					   self.menu,
+					   "\n".join(["📺 * تبلیغات - 💎 [رزرو تبلیغات](https://ble.ir/support_groupban2) *", self.bot.get_ads(connection)]),
+					   "\n".join(["📰 *اخبار ربات*", self.bot_news]),
+					   "⚖ *نقض قوانین «گروه بان» بن به همراه دارد.*"]), components=self.bot.components.site_and_support_buttons())
 			return await message.author.send("🤖 *به ربات گروه بان خوش آمدید*\n\n💎 با اضافه کردن گروه بان به گروه، امنیت اعضای گروه را تضمین کنید!\n\n⚖ *نقض قوانین «گروه بان» بن به همراه دارد*", components=self.bot.components.help_command())
 
 		elif message.content == "/donate":

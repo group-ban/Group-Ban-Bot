@@ -37,7 +37,7 @@ class Developer:
                 cursor = connection.cursor()
                 cursor.execute("SELECT chat_id FROM chat LIMIT 200")
                 chats = cursor.fetchall()
-                return await message.chat.send("💎 *لیست چت ها*\n\n{}".format("\n".join([f"🔧 {chat_id} | [ارسال پیام](send:/d group send {chat_id}) [دریافت اطلاعات](send:/d group fetch {chat_id}) [خارج شدن از چت](send:/d group leave {chat_id})" for (chat_id, ) in chats])))
+                return await message.chat.send("💎 *لیست چت ها*\n\n{}".format("\n".join([f"🔧 {chat_id} | [💬](send:/d group send {chat_id}) - [❔](send:/d group fetch {chat_id}) - [🚀](send:/d group leave {chat_id})" for (chat_id, ) in chats])))
 
         elif message.content.startswith("/d group fetch "):
             chat_id = "".join(message.content.split(" ")[3::])
@@ -95,7 +95,7 @@ class Developer:
         elif message.content == "/d message get":
             await message.chat.send("💎 *لطفا تا 30 ثانیه دیگر پیام مورد نظر ارسال نمائید*")
             try:
-                msg: "bale.Message" = await self.bot.wait_for("developer_message", check=lambda m: m.author == message.author and m.chat == message.chat and m.forward_from_message_id)
+                msg: "bale.Message" = await self.bot.wait_for("developer_message", check=lambda m: m.author == message.author and m.chat == message.chat and m.forward_from_chat, timeout=30.0)
             except asyncio.TimeoutError:
                 return await message.chat.send("💡 متاستفانه ارسال نکردید")
             else:
@@ -125,3 +125,47 @@ class Developer:
                 return await message.chat.send("❌ درخواست انجام نشد\n{}".format(err))
             else:
                 return await message.chat.send("🟢 *با موفقیت بن شد*")
+
+        elif message.content.startswith("/ads set "):
+            (user_id, max_visit_cnt) = message.content.split(" ")[2::]
+            if not user_id.isdigit() or not max_visit_cnt.isdigit():
+                return await message.chat.send("❌ *نادرست وارد شده است*")
+
+            check_message = await message.chat.send("✨ *لطفا عنوان تبلیغ را وارد نمائید*\n💡 غنوان شما میبایست حداقل *2* کاراکتر و حداکثر *30* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
+            try:
+                _title: "bale.Message" = await self.bot.wait_for("developer_message", check = lambda m: m.author == message.author and m.chat == message.chat, timeout = 120.0)
+            except asyncio.TimeoutError:
+                return await check_message.reply("*ثبت تبلیغ لغو شد*")
+            else:
+                await _title.delete()
+                if _title.content in ["/cancel", "کنسل"]:
+                    return await check_message.edit("❌ *عملیات توسط شما لغو شد*")
+
+                if not (30 >= len(_title.content) >= 2):
+                    return await check_message.edit("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
+
+                await check_message.edit("✨ *لطفا متن تبلیغ را وارد نمائید*\n💡 غنوان شما میبایست حداقل *10* کاراکتر و حداکثر *200* کاراکتر داشته باشد\n\n⭕ برای لغو عملیات از عبارت *کنسل* و یا */cancel* استفاده کنید")
+                try:
+                    _desc: "bale.Message" = await self.bot.wait_for("developer_message", check=lambda m: m.author == message.author and m.chat == message.chat, timeout=120.0)
+                except asyncio.TimeoutError:
+                    return await check_message.reply("*ثبت تبلیغ لغو شد*")
+                else:
+                    await _desc.delete()
+                    if _desc.content in ["/cancel", "کنسل"]:
+                        return await check_message.edit("❌ *عملیات توسط شما لغو شد*")
+
+                    if not (200 >= len(_desc.content) >= 10):
+                        return await check_message.edit("❌ *عملیات لغو شد؛ متن شما فاقد موارد خواسته شده بود*")
+
+                    await check_message.edit(self.bot.base_messages["wait"])
+                    with self.bot.make_db() as connection:
+                        cursor = connection.cursor()
+                        cursor.execute("SELECT * FROM ads WHERE name = '{}' AND user_id = '{}'".format(_title.content, user_id))
+                        if cursor.fetchone():
+                            return await check_message.edit("❌ *عنوان {} از قبل در دیتابیس وجود داشته است*".format(_title.content))
+
+                        cursor.execute("INSERT INTO ads(user_id, name, description, max_visit_cnt) VALUES (%s, %s, %s, %s)", (user_id, _title.content, _desc.content, int(max_visit_cnt)))
+                        connection.commit()
+                        cursor.close()
+
+                    await check_message.edit("😉 *تبلیغ مورد نظر با موفقیت برای کاربر اضافه شد*")

@@ -142,8 +142,7 @@ class Setting:
 			(state,) = cursor.fetchone()
 			connection.commit()
 
-		return await check_message.edit("✅ *وضعیت بخش خوش آمد گو با موفقیت به {} تغییر کرد.*".format(
-			"فعال" if state else "غیر فعال"))
+		return await check_message.edit("✅ *وضعیت بخش خوش آمد گو با موفقیت به {} تغییر کرد.*".format("فعال" if state else "غیر فعال"))
 
 	async def welcome_text(self, message: bale.Message, check_message: bale.Message):
 		await check_message.edit(
@@ -176,8 +175,8 @@ class Setting:
 				if not result or not result[0]:
 					return
 				(text,) = result
-			text += "\n\n✨ قدرت گرفته از [گروه بان](https://groupban.ir) ؛ برترین ربات مدیریت گروه"
-			return await message.chat.send(render_welcome_text(text, chat, user))
+				text += "\n".join(["\n📺 * تبلیغات - 💎 [رزرو تبلیغات](https://ble.ir/support_groupban2) *", self.bot.get_ads(connection)]) + "\n✨ قدرت گرفته از [گروه بان](https://groupban.ir) ؛ برترین ربات مدیریت گروه"
+			return await self.bot.send_message_without_convert(message.chat.chat_id, render_welcome_text(text, chat, user))
 
 	async def auto_answer(self, message: bale.Message, check_message: bale.Message):
 		render_bool = lambda state: "فعال" if state else "غیر فعال"

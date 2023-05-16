@@ -3,7 +3,7 @@ from typing import Optional
 import bale
 from bale import Message, Update
 from utils import persianNumbers, Components, ConfigParser, make_persian, messages, GroupBanUpdater
-from cogs import Setting, Help, Filter, Commands, Support, Developer
+from cogs import Setting, Help, Filter, Commands, Support, Developer, ADS
 from database import DB
 from datetime import datetime
 
@@ -13,7 +13,8 @@ components = (
     Filter,
     Commands,
     Support,
-    Developer
+    Developer,
+    ADS
 )
 
 with open("./config.json", "r", encoding="utf8") as _file:
@@ -28,7 +29,6 @@ class GroupBan(bale.Bot):
         self._start_time = datetime.now()
         self.command_usage_count = 0
         self.setup_events()
-        self.last_request = datetime.now()
         self.make_persian = make_persian
 
     @property
@@ -71,10 +71,20 @@ class GroupBan(bale.Bot):
             return self.dispatch("developer_message", message)
 
     async def get_updates(self, offset: int = None, limit: int = None) -> list["Update"]:
-        self.last_request = datetime.now()
         return await super().get_updates(offset, limit)
 
-    async def send_message(self, chat_id, text, *, components=None, reply_to_message_id: Optional[str | int] = None) -> "Message":
+    def get_ads(self, connection: "DB"):
+        cursor = connection.cursor()
+        cursor.execute("SELECT ads_id, description FROM ads WHERE visit_cnt != max_visit_cnt ORDER BY RAND() LIMIT 1")
+        result = cursor.fetchone()
+        cursor.close()
+        if not result:
+            return "❌ تبلیغی برای نمایش نیست"
+        (ads_id, desc) = result
+        self.dispatch("ads_enter", ads_id)
+        return desc
+
+    async def send_message(self, chat_id, text, *, components=None, reply_to_message_id: Optional[str | int] = None, convert: bool = True) -> "Message":
         """This service is used to send text messages.
 
         Parameters
@@ -87,6 +97,8 @@ class GroupBan(bale.Bot):
                 Message Components
             reply_to_message_id: Optional[:class:`str` | :class:`int`]
                 Additional interface options. An object for an inline keyboard, custom reply keyboard, instructions to remove reply keyboard or to force a reply from the user.
+            convert: Optional[bool]
+                a boolean param to set convetion status
         Returns
         -------
             :class:`bale.Message`
@@ -100,13 +112,17 @@ class GroupBan(bale.Bot):
             APIError
                 Send Message Failed.
         """
-        for (persian_num, english_num) in persianNumbers:
-            text = text.replace(english_num, persian_num)
+        if convert:
+            for (persian_num, english_num) in persianNumbers:
+                text = text.replace(english_num, persian_num)
         try:
             return await super().send_message(chat_id, text, components=components, reply_to_message_id=reply_to_message_id)
         except bale.BaleError as exc:
             if exc.message == "0: Internal server error":
                 return await super().send_message(chat_id, text, components=components, reply_to_message_id=reply_to_message_id)
+
+    async def send_message_without_convert(self, chat_id, text) -> "Message":
+        return await self.send_message(chat_id, text, convert=False)
 
     async def edit_message(self, chat_id: str | int, message_id: str | int, text: str, *,
                            components = None) -> "Message":
