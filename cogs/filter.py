@@ -73,6 +73,6 @@ class Filter:
                     break
 
         if auto_answer and auto_answer_dict.get(standard_content):
-            return await self.do_after_check_chat_member(message.chat.send, message, auto_answer_dict.get(standard_content))
+            return await self.do_after_check_chat_member(self.bot.send_message_without_convert, message, message.chat_id, auto_answer_dict.get(standard_content))
 
         self.bot.dispatch("verified_message", message)
