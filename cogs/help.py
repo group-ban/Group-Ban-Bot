@@ -47,13 +47,13 @@ class Help:
 		if message.content.lower() in ["/help", "/start", self.bot.user.mention.lower()]:
 			if message.chat.type.is_group_chat():
 				with self.bot.make_db() as connection:
-					return await message.reply("\n\n".join([
-						"🤖 *گروه بان؛ مدرن ترین ربات مدیریت گروه*",
+					return await self.bot.send_message_without_convert(message.chat_id, "\n\n".join([
+						"*⚜ شروع | [منوی دستورات](send:/commands) | [درباره گروه بان](send:/about)*",
 					   self.menu,
 					   "\n".join(["📺 * تبلیغات - 💎 [رزرو تبلیغات](https://ble.ir/support_groupban2) *", self.bot.get_ads(connection)]),
 					   "\n".join(["📰 *اخبار ربات*", self.bot_news]),
-					   "⚖ *نقض قوانین «گروه بان» بن به همراه دارد.*"]), components=self.bot.components.site_and_support_buttons())
-			return await message.author.send("🤖 *به ربات گروه بان خوش آمدید*\n\n💎 با اضافه کردن گروه بان به گروه، امنیت اعضای گروه را تضمین کنید!\n\n⚖ *نقض قوانین «گروه بان» بن به همراه دارد*", components=self.bot.components.help_command())
+					   "⚖ *نقض قوانین «گروه بان» بن به همراه دارد.*\n🛡 با گروه بان امنیت اعضای گروهتو تضمین کن!"]), components=self.bot.components.site_and_support_buttons())
+			return await self.bot.send_message_without_convert(message.chat_id, "🤖 *به ربات گروه بان خوش آمدید*\n\n💎 با اضافه کردن گروه بان به گروه، امنیت اعضای گروه را تضمین کنید!\n\n⚖ *نقض قوانین «گروه بان» بن به همراه دارد*", self.bot.components.help_command())
 
 		elif message.content == "/donate":
 			return await message.chat.send("❤ *دونیت به مجموعه گروه بان*\n\nشما میتوانید از طریق سرویس پرداخت امن آی دی پی (idpay) مبلغ مورد نظر خود را به مجموعه گروه بان اهدا نمائید.", components=bale.Components(inline_keyboards=[bale.InlineKeyboard("اهدا به مجموعه گروه بان", url="https://idpay.ir/group-ban")]))
@@ -62,7 +62,7 @@ class Help:
 			return await message.chat.send("🏓 *پونگ*\n\n*آپتایم* : {}\n*دستورات استفاده شده* : {}\n\n✨ گروه بان؛ مدرن ترین ربات مدیریت گروه در بله".format(parse_time(self.bot.uptime), self.bot.command_usage_count))
 
 		elif message.content == "/about":
-			return await message.chat.send("〽 *درباره مجموعه گروه بان*\n\n👥 توسعه داده شده توسط *کیان احمدیان و امین شهرابی*\n\n👨‍💻 این بازو به وسیله زبان قدرتمند *پایتون* و کتابخانه *python-bale-bot* طراحی و برنامه نویسی شده است. همچنین این پروژه به صورت متن باز (Open Source) در گیت هاب مجموعه قرار دارد.\n\n🔆 بهار 1402", components=self.bot.components.about_command())
+			return await message.chat.send("*⚜ [شروع](send:/help) | [منوی دستورات](send:/commands) | درباره گروه بان*\n\n〽 *درباره مجموعه گروه بان*\n\n👥 توسعه داده شده توسط *کیان احمدیان و امین شهرابی*\n🎨 گرافیک، استاتیک و لوگو: *کسری گماسایی*\n\n👨‍💻 این بازو به وسیله زبان قدرتمند *پایتون* و کتابخانه *python-bale-bot* طراحی و برنامه نویسی شده است. همچنین این پروژه به صورت متن باز (Open Source) در گیت هاب مجموعه قرار دارد.\n\n🔆 بهار ۱۴۰۲", components=self.bot.components.about_command())
 
 	async def when_message_not_verified(self, message: bale.Message):
 		if message.chat.type.is_group_chat():
